@@ -2,10 +2,6 @@ import streamlit as st
 from datetime import date
 import io
 import re
-import zlib
-import base64
-import requests
-import pandas as pd
 
 # --- CONFIGURATION ---
 st.set_page_config(
@@ -41,7 +37,7 @@ st.markdown("""
         background-color: #f1f5f9; 
         padding: 8px 12px; 
         border-radius: 6px; 
-        margin-bottom: 10px;
+        margin-bottom: 10px; 
         font-weight: bold;
         color: #334155;
         border-left: 4px solid #3b82f6;
@@ -49,30 +45,11 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- NEW ARCHITECTURE HELPERS ---
-def get_mermaid_image(mermaid_code):
-    """Converts Mermaid code to PNG bytes using the Kroki API for Word export."""
-    try:
-        compressed = zlib.compress(mermaid_code.encode('utf-8'), 9)
-        encoded = base64.urlsafe_b64encode(compressed).decode('ascii')
-        url = f"https://kroki.io/mermaid/png/{encoded}"
-        response = requests.get(url)
-        if response.status_code == 200:
-            return response.content
-    except Exception as e:
-        st.error(f"Diagram conversion error: {e}")
-    return None
-
-def extract_mermaid(text):
-    """Extracts the first mermaid code block found in the generated SOW."""
-    pattern = r"```mermaid\s+(.*?)\s+```"
-    match = re.search(pattern, text, re.DOTALL)
-    return match.group(1).strip() if match else None
-
 # --- CACHED UTILITIES ---
 def create_docx_logic(text_content, branding_info):
     """
-    Generates the Word document. Heavy imports are inside to speed up launch.
+    Generates the Word document with strict page isolation and markdown cleanup.
+    Ensures Section 1 (TOC) is on Page 2 and Section 2 starts on Page 3.
     """
     from docx import Document
     from docx.shared import Inches, Pt, RGBColor
@@ -81,19 +58,17 @@ def create_docx_logic(text_content, branding_info):
     doc = Document()
     
     # --- PAGE 1: COVER PAGE ---
-    # 1. AWS Partner Network Logo (TOP LEFT)
     if branding_info.get('aws_pn_logo_bytes'):
+        p_top = doc.add_paragraph()
+        p_top.alignment = WD_ALIGN_PARAGRAPH.LEFT
         try:
-            p_top = doc.add_paragraph()
-            p_top.alignment = WD_ALIGN_PARAGRAPH.LEFT
             run = p_top.add_run()
             run.add_picture(io.BytesIO(branding_info['aws_pn_logo_bytes']), width=Inches(1.0))
         except:
-            doc.add_paragraph("aws partner network").alignment = WD_ALIGN_PARAGRAPH.LEFT
+            p_top.add_run("aws partner network").bold = True
 
-    doc.add_paragraph("\n" * 3) # Spacing
+    doc.add_paragraph("\n" * 3)
     
-    # 2. Solution Name & Subtitle (CENTER)
     title_p = doc.add_paragraph()
     title_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     run = title_p.add_run(branding_info['solution_name'])
@@ -106,93 +81,83 @@ def create_docx_logic(text_content, branding_info):
     run.font.size = Pt(14)
     run.font.color.rgb = RGBColor(0x64, 0x74, 0x8B)
     
-    doc.add_paragraph("\n" * 4) # Spacing to logos
+    doc.add_paragraph("\n" * 4)
     
-    # 3. Logo Row: Customer | Oneture | AWS Advanced Tier (SINGLE LINE, SPECIFIC SIZES)
     logo_table = doc.add_table(rows=1, cols=3)
     logo_table.alignment = WD_ALIGN_PARAGRAPH.CENTER
     
-    # Define widths as requested
-    cust_width = Inches(1.4)
-    oneture_width = Inches(2.2)
-    aws_width = Inches(1.3)
-    
-    # Cell 1: Customer Logo
-    cell_cust = logo_table.rows[0].cells[0]
-    p_cust = cell_cust.paragraphs[0]
-    p_cust.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    if branding_info.get('customer_logo_bytes'):
-        try:
-            run = p_cust.add_run()
-            run.add_picture(io.BytesIO(branding_info['customer_logo_bytes']), width=cust_width)
-        except:
-            p_cust.add_run("[Customer Logo]")
-            
-    # Cell 2: Oneture Logo
-    cell_one = logo_table.rows[0].cells[1]
-    p_one = cell_one.paragraphs[0]
-    p_one.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    if branding_info.get('oneture_logo_bytes'):
-        try:
-            run = p_one.add_run()
-            run.add_picture(io.BytesIO(branding_info['oneture_logo_bytes']), width=oneture_width)
-        except:
-            p_one.add_run("ONETURE")
+    def insert_logo_to_cell(cell, bytes_data, width_val, fallback_text):
+        cell.paragraphs[0].text = ""
+        p = cell.paragraphs[0]
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        if bytes_data:
+            try:
+                p.add_run().add_picture(io.BytesIO(bytes_data), width=Inches(width_val))
+            except:
+                p.add_run(fallback_text).bold = True
+        else:
+            p.add_run(fallback_text).bold = True
 
-    # Cell 3: AWS Advanced Logo
-    cell_aws = logo_table.rows[0].cells[2]
-    p_aws = cell_aws.paragraphs[0]
-    p_aws.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    if branding_info.get('aws_adv_logo_bytes'):
-        try:
-            run = p_aws.add_run()
-            run.add_picture(io.BytesIO(branding_info['aws_adv_logo_bytes']), width=aws_width)
-        except:
-            p_aws.add_run("AWS Advanced")
+    insert_logo_to_cell(logo_table.rows[0].cells[0], branding_info.get('customer_logo_bytes'), 1.4, "[Customer Logo]")
+    insert_logo_to_cell(logo_table.rows[0].cells[1], branding_info.get('oneture_logo_bytes'), 2.2, "ONETURE")
+    insert_logo_to_cell(logo_table.rows[0].cells[2], branding_info.get('aws_adv_logo_bytes'), 1.3, "AWS Advanced")
 
-    doc.add_paragraph("\n" * 4) # Spacing to date
+    doc.add_paragraph("\n" * 4)
     
-    # 5. Date (BOTTOM CENTER)
     date_p = doc.add_paragraph()
     date_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     run = date_p.add_run(branding_info['doc_date_str'])
     run.font.size = Pt(12)
     run.font.bold = True
     
+    # Break to Page 2 (TOC)
     doc.add_page_break()
     
-    # --- PAGE 2 ONWARDS: CONTENT ---
+    # --- CONTENT PROCESSING ---
     style = doc.styles['Normal']
     style.font.name = 'Arial'
     style.font.size = Pt(11)
 
     lines = text_content.split('\n')
     i = 0
-    skip_mermaid_block = False
+    in_toc_section = False
+    toc_already_added = False
+
     while i < len(lines):
         line = lines[i].strip()
-        # Logic to skip the raw code block in the word doc but insert the IMAGE instead
-        if line.startswith("```mermaid"):
-            skip_mermaid_block = True
-            i += 1
-            continue
-        if line.startswith("```") and skip_mermaid_block:
-            skip_mermaid_block = False
-            i += 1
-            continue
-        if skip_mermaid_block:
+        if not line:
+            # Avoid adding multiple blank paragraphs to keep page counts low
+            if i > 0 and lines[i-1].strip():
+                doc.add_paragraph("")
             i += 1
             continue
 
-        # Logic to insert Architecture Image under Section 4
-        if "4 SOLUTION ARCHITECTURE" in line.upper() or "4. SOLUTION ARCHITECTURE" in line.upper():
-            doc.add_heading(line, level=1)
-            if branding_info.get('arch_img_bytes'):
-                doc.add_paragraph("The technical architecture for this solution is illustrated below:")
-                doc.add_picture(io.BytesIO(branding_info['arch_img_bytes']), width=Inches(5.5))
+        clean_check = line.replace('#', '').strip().upper()
+        
+        # 1. Handle PROJECT OVERVIEW (MUST START ON PAGE 3)
+        if "2 PROJECT OVERVIEW" in clean_check:
+            doc.add_page_break()
+            in_toc_section = False
+            # We add it manually as heading level 1 and skip standard parsing for this line
+            text = line.replace('#', '').strip().replace('**', '').replace('*', '')
+            doc.add_heading(text, level=1)
             i += 1
             continue
-            
+
+        # 2. Handle Table of Contents detection
+        if "1 TABLE OF CONTENTS" in clean_check:
+            if not toc_already_added:
+                in_toc_section = True
+                toc_already_added = True
+                text = line.replace('#', '').strip().replace('**', '').replace('*', '')
+                doc.add_heading(text, level=1)
+            i += 1
+            continue
+
+        # Global markdown artifact cleanup (remove unnecessary asterisks/bolding marks)
+        line_clean = line.replace('**', '').replace('*', '')
+
+        # Markdown Table Detection
         if line.startswith('|') and i + 1 < len(lines) and lines[i+1].strip().startswith('|'):
             table_lines = []
             while i < len(lines) and lines[i].strip().startswith('|'):
@@ -215,18 +180,35 @@ def create_docx_logic(text_content, branding_info):
                                 row_cells[idx].text = c_text
             continue
 
-        if not line:
-            doc.add_paragraph("")
-        elif line.startswith('# '):
-            doc.add_heading(line[2:], level=1)
+        # Standard Markdown Element Parsing
+        if line.startswith('# '):
+            text = line[2:].strip().replace('**', '').replace('*', '')
+            doc.add_heading(text, level=1)
         elif line.startswith('## '):
-            doc.add_heading(line[3:], level=2)
+            text = line[3:].strip().replace('**', '').replace('*', '')
+            p = doc.add_heading(text, level=2)
+            if in_toc_section:
+                p.paragraph_format.left_indent = Inches(0.4)
         elif line.startswith('### '):
-            doc.add_heading(line[4:], level=3)
+            text = line[4:].strip().replace('**', '').replace('*', '')
+            p = doc.add_heading(text, level=3)
+            if in_toc_section:
+                p.paragraph_format.left_indent = Inches(0.8)
         elif line.startswith('- ') or line.startswith('* '):
-            doc.add_paragraph(line[2:], style='List Bullet')
+            text = line[2:].strip().replace('**', '').replace('*', '')
+            p = doc.add_paragraph(text, style='List Bullet')
+            if in_toc_section:
+                p.paragraph_format.left_indent = Inches(0.4)
         else:
-            doc.add_paragraph(line)
+            # Body text or TOC list items
+            p = doc.add_paragraph(line_clean)
+            if in_toc_section and len(line_clean) > 3 and line_clean[0].isdigit():
+                 p.paragraph_format.left_indent = Inches(0.4)
+            
+            # Segregation logic for Assumptions and Dependencies
+            if "DEPENDENCIES:" in line_clean.upper() or "ASSUMPTIONS:" in line_clean.upper():
+                # Bold only the label part
+                p.runs[0].bold = True
         i += 1
             
     bio = io.BytesIO()
@@ -295,16 +277,14 @@ st.title("🚀 GenAI Scope of Work Architect")
 
 # --- STEP 0: COVER PAGE BRANDING ---
 st.header("📸 Cover Page Branding")
-st.info("Upload the logos to recreate the cover page title layout. All logos will be placed side-by-side.")
-
 brand_col1, brand_col2 = st.columns(2)
 with brand_col1:
     aws_pn_logo = st.file_uploader("Top Left: AWS Partner Network Logo", type=['png', 'jpg', 'jpeg'], key="aws_pn")
-    customer_logo = st.file_uploader("Center Position: Customer Logo", type=['png', 'jpg', 'jpeg'], key="cust_logo")
+    customer_logo = st.file_uploader("Logo Row - Slot 1: Customer Logo", type=['png', 'jpg', 'jpeg'], key="cust_logo")
 
 with brand_col2:
-    oneture_logo = st.file_uploader("Bottom Left Position: Oneture Logo", type=['png', 'jpg', 'jpeg'], key="one_logo")
-    aws_adv_logo = st.file_uploader("Bottom Right Position: AWS Advanced Tier Logo", type=['png', 'jpg', 'jpeg'], key="aws_adv")
+    oneture_logo = st.file_uploader("Logo Row - Slot 2: Oneture Logo", type=['png', 'jpg', 'jpeg'], key="one_logo")
+    aws_adv_logo = st.file_uploader("Logo Row - Slot 3: AWS Advanced Logo", type=['png', 'jpg', 'jpeg'], key="aws_adv")
     doc_date = st.date_input("Document Date", date.today())
 
 st.divider()
@@ -312,10 +292,9 @@ st.divider()
 # --- STEP 2: OBJECTIVES & STAKEHOLDERS ---
 st.header("2. Objectives & Stakeholders")
 
-# 2.1 OBJECTIVE
 st.subheader("🎯 2.1 Objective")
 objective = st.text_area(
-    "Define the core business objective and problem statement:", 
+    "Define the core business objective:", 
     placeholder="e.g., Development of a Gen AI based WIMO Bot to demonstrate feasibility...",
     height=120
 )
@@ -327,12 +306,11 @@ outcomes = st.multiselect(
 
 st.divider()
 
-# 2.2 PROJECT STAKEHOLDERS
 st.subheader("👥 2.2 Project Sponsor(s) / Stakeholder(s) / Project Team")
 col_team1, col_team2 = st.columns(2)
 
 with col_team1:
-    st.markdown('<div class="stakeholder-header">Partner Executive Sponsor (Oneture)</div>', unsafe_allow_html=True)
+    st.markdown('<div class="stakeholder-header">Partner Executive Sponsor</div>', unsafe_allow_html=True)
     st.session_state.stakeholders["Partner"] = st.data_editor(st.session_state.stakeholders["Partner"], num_rows="dynamic", use_container_width=True, key="ed_partner")
 
     st.markdown('<div class="stakeholder-header">AWS Executive Sponsor</div>', unsafe_allow_html=True)
@@ -362,24 +340,8 @@ if st.button("✨ Generate SOW Document", type="primary", use_container_width=Tr
             prompt_text = f"""
             Generate a COMPLETE formal enterprise Scope of Work (SOW) for {final_solution} in {final_industry}.
             
-            INPUT DETAILS:
-            - Engagement Type: {engagement_type}
-            - Primary Objective: {objective}
-            - Success Metrics: {', '.join(outcomes)}
-            - Timeline: {duration}
-            
-            STAKEHOLDER TABLES:
-            ### Partner Sponsor:
-            {get_md(st.session_state.stakeholders["Partner"])}
-            ### Customer Sponsor:
-            {get_md(st.session_state.stakeholders["Customer"])}
-            ### AWS Sponsor:
-            {get_md(st.session_state.stakeholders["AWS"])}
-            ### Escalation Contacts:
-            {get_md(st.session_state.stakeholders["Escalation"])}
-            
-            STRICT STRUCTURE:
-            1 TABLE OF CONTENTS
+            MANDATORY STRUCTURE:
+            1 TABLE OF CONTENTS (Indented sub-items)
             2 PROJECT OVERVIEW
               2.1 OBJECTIVE
               2.2 PROJECT SPONSOR(S) / STAKEHOLDER(S) / PROJECT TEAM
@@ -389,12 +351,32 @@ if st.button("✨ Generate SOW Document", type="primary", use_container_width=Tr
             4 SOLUTION ARCHITECTURE / ARCHITECTURAL DIAGRAM
             5 RESOURCES & COST ESTIMATES
 
+            CONTENT RULES:
+            - NO filler text or introductory sentences between headers 2, 2.1, 2.2, and 2.3.
+            - Section 2 must start immediately with 2.1 Objective.
+            - Section 2.2 follows immediately with the provided tables.
+            - Section 2.3 must clearly segregate into "Dependencies:" and "Assumptions:" with bulleted lists.
+            - Remove ALL unnecessary asterisks (*) or markdown bolding marks (**) inside text or headings. 
+            - Use plain text for headers and labels. No markdown symbols in the output content.
+
+            INPUT DETAILS:
+            - Engagement Type: {engagement_type}
+            - Primary Objective: {objective}
+            - Success Metrics: {', '.join(outcomes)}
+            - Timeline: {duration}
+            
+            STAKEHOLDER TABLES:
+            {get_md(st.session_state.stakeholders["Partner"])}
+            {get_md(st.session_state.stakeholders["Customer"])}
+            {get_md(st.session_state.stakeholders["AWS"])}
+            {get_md(st.session_state.stakeholders["Escalation"])}
+
             Tone: Professional consulting. Output: Markdown only.
             """
             
             payload = {
                 "contents": [{"parts": [{"text": prompt_text}]}],
-                "systemInstruction": {"parts": [{"text": "You are a senior Solutions Architect at Oneture. You generate detailed SOWs matching the standards of Nykaa and Jubilant PDF documents."}]}
+                "systemInstruction": {"parts": [{"text": "You are a senior Solutions Architect. You generate detailed SOW documents. Strictly follow numbering. NO filler text. NO markdown bolding marks or asterisks in the output text. Plain text output only."}]}
             }
             
             try:
@@ -411,11 +393,7 @@ if st.button("✨ Generate SOW Document", type="primary", use_container_width=Tr
 if st.session_state.generated_sow:
     st.divider()
     st.header("3. Review & Export")
-    # Updated Tabs to include Architecture
-    tab_edit, tab_preview, tab_arch = st.tabs(["✍️ Document Editor", "📄 Visual Preview", "🏗️ Architecture Diagram"])
-
-    # Extract mermaid code from state
-    mermaid_code = extract_mermaid(st.session_state.generated_sow)
+    tab_edit, tab_preview = st.tabs(["✍️ Document Editor", "📄 Visual Preview"])
     
     with tab_edit:
         st.session_state.generated_sow = st.text_area(
