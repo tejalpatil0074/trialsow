@@ -1,6 +1,11 @@
 import streamlit as st
 from datetime import date
 import io
+import re
+import zlib
+import base64
+import requests
+import pandas as pd
 
 # --- CONFIGURATION ---
 st.set_page_config(
@@ -43,6 +48,26 @@ st.markdown("""
     }
     </style>
     """, unsafe_allow_html=True)
+
+# --- NEW ARCHITECTURE HELPERS ---
+def get_mermaid_image(mermaid_code):
+    """Converts Mermaid code to PNG bytes using the Kroki API for Word export."""
+    try:
+        compressed = zlib.compress(mermaid_code.encode('utf-8'), 9)
+        encoded = base64.urlsafe_b64encode(compressed).decode('ascii')
+        url = f"https://kroki.io/mermaid/png/{encoded}"
+        response = requests.get(url)
+        if response.status_code == 200:
+            return response.content
+    except Exception as e:
+        st.error(f"Diagram conversion error: {e}")
+    return None
+
+def extract_mermaid(text):
+    """Extracts the first mermaid code block found in the generated SOW."""
+    pattern = r"```mermaid\s+(.*?)\s+```"
+    match = re.search(pattern, text, re.DOTALL)
+    return match.group(1).strip() if match else None
 
 # --- CACHED UTILITIES ---
 def create_docx_logic(text_content, branding_info):
@@ -145,6 +170,28 @@ def create_docx_logic(text_content, branding_info):
     i = 0
     while i < len(lines):
         line = lines[i].strip()
+        # Logic to skip the raw code block in the word doc but insert the IMAGE instead
+        if line.startswith("```mermaid"):
+            skip_mermaid_block = True
+            i += 1
+            continue
+        if line.startswith("```") and skip_mermaid_block:
+            skip_mermaid_block = False
+            i += 1
+            continue
+        if skip_mermaid_block:
+            i += 1
+            continue
+
+        # Logic to insert Architecture Image under Section 4
+        if "4 SOLUTION ARCHITECTURE" in line.upper() or "4. SOLUTION ARCHITECTURE" in line.upper():
+            doc.add_heading(line, level=1)
+            if branding_info.get('arch_img_bytes'):
+                doc.add_paragraph("The technical architecture for this solution is illustrated below:")
+                doc.add_picture(io.BytesIO(branding_info['arch_img_bytes']), width=Inches(5.5))
+            i += 1
+            continue
+            
         if line.startswith('|') and i + 1 < len(lines) and lines[i+1].strip().startswith('|'):
             table_lines = []
             while i < len(lines) and lines[i].strip().startswith('|'):
@@ -363,7 +410,11 @@ if st.button("✨ Generate SOW Document", type="primary", use_container_width=Tr
 if st.session_state.generated_sow:
     st.divider()
     st.header("3. Review & Export")
-    tab_edit, tab_preview = st.tabs(["✍️ Document Editor", "📄 Visual Preview"])
+    # Updated Tabs to include Architecture
+    tab_edit, tab_preview, tab_arch = st.tabs(["✍️ Document Editor", "📄 Visual Preview", "🏗️ Architecture Diagram"])
+
+    # Extract mermaid code from state
+    mermaid_code = extract_mermaid(st.session_state.generated_sow)
     
     with tab_edit:
         st.session_state.generated_sow = st.text_area(
