@@ -168,6 +168,7 @@ def create_docx_logic(text_content, branding_info):
 
     lines = text_content.split('\n')
     i = 0
+    skip_mermaid_block = False
     while i < len(lines):
         line = lines[i].strip()
         # Logic to skip the raw code block in the word doc but insert the IMAGE instead
