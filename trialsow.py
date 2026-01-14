@@ -247,21 +247,12 @@ with st.sidebar:
     st.header("📋 1. Project Intake")
 
     solution_options = [
-        "Multi Agent Store Advisor", "Intelligent Search", "Recommendation", 
-        "AI Agents Demand Forecasting", "Banner Audit using LLM", "Image Enhancement", 
-        "Virtual Try-On", "Agentic AI L1 Support", "Product Listing Standardization", 
-        "AI Agents Based Pricing Module", "Cost, Margin Visibility & Insights using LLM", 
-        "AI Trend Simulator", "Virtual Data Analyst (Text to SQL)", "Multilingual Call Analysis", 
-        "Customer Review Analysis", "Sales Co-Pilot", "Research Co-Pilot", 
-        "Product Copy Generator", "Multi-agent e-KYC & Onboarding", "Document / Report Audit", 
-        "RBI Circular Scraping & Insights Bot", "Visual Inspection", 
-        "AIoT based CCTV Surveillance", "Multilingual Voice Bot", "SOP Creation", "Other (Please specify)"
+        "Beauty Advisor POC SOW", "Ready Search POC Scope of Work Document", "AI based Image Inspection POC SOW",
+        "AI based Image Enhancement POC SOW", "L1 Support Bot POC SOW", "Poc Scope Document", "Gen AI Speech To Speech", 
+        "Project Scope Document", "Gen AI for SOP POC SOW"
     ]
     solution_type = st.selectbox("1.1 Solution Type", solution_options)
     final_solution = st.text_input("Specify Solution Name", placeholder="Enter solution...") if solution_type == "Other (Please specify)" else solution_type
-
-    engagement_options = ["Proof of Concept (PoC)", "Pilot", "MVP", "Production Rollout", "Assessment / Discovery", "Support"]
-    engagement_type = st.selectbox("1.2 Engagement Type", engagement_options)
 
     industry_options = ["Retail / E-commerce", "BFSI", "Manufacturing", "Telecom", "Healthcare", "Energy / Utilities", "Logistics", "Media", "Government", "Other (specify)"]
     industry_type = st.selectbox("1.3 Industry / Domain", industry_options)
