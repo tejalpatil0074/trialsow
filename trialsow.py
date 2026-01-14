@@ -6,15 +6,15 @@ import re
 # NEW ADDITION – STEP 1
 # =========================
 ARCHITECTURE_IMAGE_MAP = {
-    "Beauty Advisor POC SOW": "diagrams/beauty_advisor.png",
-    "Ready Search POC Scope of Work Document": "diagrams/ready_search.png",
-    "AI based Image Inspection POC SOW": "diagrams/image_inspection.png",
-    "AI based Image Enhancement POC SOW": "diagrams/image_enhancement.png",
-    "L1 Support Bot POC SOW": "diagrams/l1_support_bot.png",
-    "Poc Scope Document": "diagrams/poc_scope.png",
-    "Gen AI Speech To Speech": "diagrams/speech_to_speech.png",
-    "Project Scope Document": "diagrams/project_scope.png",
-    "Gen AI for SOP POC SOW": "diagrams/genai_sop.png"
+    "Beauty Advisor POC SOW": "diagrams/Beauty Advisor POC SOW.png",
+    "Ready Search POC Scope of Work Document": "diagrams/Ready Search POC Scope of Work Document.png",
+    "AI based Image Inspection POC SOW": "diagrams/AI based Image Inspection POC SOW.png",
+    "AI based Image Enhancement POC SOW": "diagrams/AI based Image Enhancement POC SOW.png",
+    "L1 Support Bot POC SOW": "diagrams/L1 Support Bot POC SOW.png",
+    "Poc Scope Document": "diagrams/PoC Scope Document.png",
+    "Gen AI Speech To Speech": "diagrams/Gen AI Speech To Speech.png",
+    "Project Scope Document": "diagrams/Project Scope Document.png",
+    "Gen AI for SOP POC SOW": "diagrams/Gen AI for SOP POC SOW.png"
 }
 
 # --- CONFIGURATION ---
@@ -193,6 +193,24 @@ def create_docx_logic(text_content, branding_info):
                             if idx < len(row_cells):
                                 row_cells[idx].text = c_text
             continue
+        # >>> ADDED: AUTO INSERT ARCHITECTURE IMAGE AFTER SCOPE OF WORK
+        if "3 SCOPE OF WORK" in clean_check:
+            doc.add_heading(line_clean, level=1)
+
+            arch_path = branding_info.get("architecture_image_path")
+        if arch_path:
+           try:
+              p = doc.add_paragraph()
+              p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+              p.add_run().add_picture(arch_path, width=Inches(5.8))
+              cap = doc.add_paragraph("Figure: High Level Solution Architecture")
+              cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+           except:
+              doc.add_paragraph("Architecture diagram could not be loaded.")
+
+    i += 1
+    continue
+
 
         # Standard Markdown Element Parsing
         if line.startswith('# '):
