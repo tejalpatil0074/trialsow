@@ -2,6 +2,39 @@ import streamlit as st
 from datetime import date
 import io
 import re
+import os
+
+# --- FILE PATHING & DIAGRAM MAPPING ---
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+SOW_DIAGRAM_MAP = {
+    "L1 Support Bot POC SOW":
+        os.path.join(BASE_DIR, "diagrams", "L1 Support Bot POC SOW.png"),
+
+    "Ready Search POC Scope of Work Document":
+        os.path.join(BASE_DIR, "diagrams", "Ready Search POC Scope of Work Document.png"),
+
+    "AI based Image Enhancement POC SOW":
+        os.path.join(BASE_DIR, "diagrams", "AI based Image Enhancement POC SOW.png"),
+
+    "Beauty Advisor POC SOW":
+        os.path.join(BASE_DIR, "diagrams", "Beauty Advisor POC SOW.png"),
+
+    "AI based Image Inspection POC SOW":
+        os.path.join(BASE_DIR, "diagrams", "AI based Image Inspection POC SOW.png"),
+
+    "Gen AI for SOP POC SOW":
+        os.path.join(BASE_DIR, "diagrams", "Gen AI for SOP POC SOW.png"),
+
+    "Project Scope Document":
+        os.path.join(BASE_DIR, "diagrams", "Project Scope Document.png"),
+
+    "Gen AI Speech To Speech":
+        os.path.join(BASE_DIR, "diagrams", "Gen AI Speech To Speech.png"),
+
+    "PoC Scope Document":
+        os.path.join(BASE_DIR, "diagrams", "PoC Scope Document.png")
+}
 
 # --- CONFIGURATION ---
 st.set_page_config(
@@ -46,12 +79,9 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # --- CACHED UTILITIES ---
-def create_docx_logic(text_content, branding_info):
+def create_docx_logic(text_content, branding_info, sow_type_name):
     """
     Generates the Word document with strict page isolation and markdown cleanup.
-    Page 1: Cover
-    Page 2: Table of Contents (Isolated)
-    Page 3: Project Overview (2.1 -> 2.2 -> 2.3 sequence)
     """
     from docx import Document
     from docx.shared import Inches, Pt, RGBColor
@@ -73,7 +103,7 @@ def create_docx_logic(text_content, branding_info):
     
     title_p = doc.add_paragraph()
     title_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = title_p.add_run(branding_info['solution_name'])
+    run = title_p.add_run(branding_info['sow_name'])
     run.font.size = Pt(26)
     run.font.bold = True
     
@@ -112,7 +142,6 @@ def create_docx_logic(text_content, branding_info):
     run.font.size = Pt(12)
     run.font.bold = True
     
-    # End Page 1
     doc.add_page_break()
     
     # --- CONTENT PROCESSING ---
@@ -129,21 +158,31 @@ def create_docx_logic(text_content, branding_info):
     while i < len(lines):
         line = lines[i].strip()
         if not line:
-            # Add small spacing to keep document flow
             if i > 0 and lines[i-1].strip():
                 doc.add_paragraph("")
             i += 1
             continue
 
-        # Prepare strings for structure detection - Use regex for cleaner stripping
-        # Remove markdown bolding and italics artifacts
         line_clean = re.sub(r'\*+', '', line).strip()
-        # Extract title text without header markers
         clean_text = re.sub(r'^#+\s*', '', line_clean).strip()
         upper_text = clean_text.upper()
 
-        # 1. Page Break Trigger: Section 2 MUST start on Page 3
-        # Detection matches any line starting with 2 and PROJECT OVERVIEW, or a header with it
+        # Trigger for Section 4: Insert Architecture Diagram
+        if "4 SOLUTION ARCHITECTURE" in upper_text and (line.startswith('#') or line.startswith('4')):
+            doc.add_heading(clean_text, level=1)
+            diagram_path = SOW_DIAGRAM_MAP.get(sow_type_name)
+            if diagram_path and os.path.exists(diagram_path):
+                doc.add_paragraph("")
+                try:
+                    doc.add_picture(diagram_path, width=Inches(6.0))
+                    p_cap = doc.add_paragraph(f"{sow_type_name} – Architecture Diagram")
+                    p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                except:
+                    doc.add_paragraph("[Architecture Diagram - Missing or Incompatible Format]")
+                doc.add_paragraph("")
+            i += 1
+            continue
+
         if ("2 PROJECT OVERVIEW" in upper_text) and (line.startswith('#') or line.startswith('2')) and not overview_started:
             doc.add_page_break()
             in_toc_section = False
@@ -152,7 +191,6 @@ def create_docx_logic(text_content, branding_info):
             i += 1
             continue
 
-        # 2. Section 1 Trigger: TOC MUST stay on Page 2
         if "1 TABLE OF CONTENTS" in upper_text:
             if not toc_already_added:
                 in_toc_section = True
@@ -161,7 +199,6 @@ def create_docx_logic(text_content, branding_info):
             i += 1
             continue
 
-        # Markdown Table Detection
         if line.startswith('|') and i + 1 < len(lines) and lines[i+1].strip().startswith('|'):
             table_lines = []
             while i < len(lines) and lines[i].strip().startswith('|'):
@@ -185,7 +222,6 @@ def create_docx_logic(text_content, branding_info):
                 doc.add_paragraph("")
             continue
 
-        # Standard Elements Parsing
         if line.startswith('# '):
             doc.add_heading(clean_text, level=1)
         elif line.startswith('## '):
@@ -197,19 +233,22 @@ def create_docx_logic(text_content, branding_info):
             if in_toc_section:
                 p.paragraph_format.left_indent = Inches(0.8)
         elif line.startswith('- ') or line.startswith('* '):
-            # Strip the bullet marker for standard list rendering
             bullet_text = re.sub(r'^[-*]\s*', '', clean_text)
             p = doc.add_paragraph(bullet_text, style='List Bullet')
             if in_toc_section:
                 p.paragraph_format.left_indent = Inches(0.4)
         else:
-            # Handle plain body text or TOC sub-items
             p = doc.add_paragraph(clean_text)
             if in_toc_section and len(clean_text) > 3 and clean_text[0].isdigit():
                  p.paragraph_format.left_indent = Inches(0.4)
             
-            # Segregation bolding logic for key category labels in Project Overview
-            if any(key in upper_text for key in ["DEPENDENCIES:", "ASSUMPTIONS:", "SPONSOR:", "CONTACTS:"]):
+            # Segregation bolding logic for all key sections and stakeholder sub-headers
+            segregation_keywords = [
+                "PARTNER EXECUTIVE SPONSOR", "CUSTOMER EXECUTIVE SPONSOR", 
+                "AWS EXECUTIVE SPONSOR", "PROJECT ESCALATION CONTACTS",
+                "DEPENDENCIES:", "ASSUMPTIONS:", "SPONSOR:", "CONTACTS:"
+            ]
+            if any(key in upper_text for key in segregation_keywords):
                 if p.runs:
                     p.runs[0].bold = True
         i += 1
@@ -249,25 +288,31 @@ with st.sidebar:
     st.divider()
     st.header("📋 1. Project Intake")
 
-    solution_options = [
-        "Multi Agent Store Advisor", "Intelligent Search", "Recommendation", 
-        "AI Agents Demand Forecasting", "Banner Audit using LLM", "Image Enhancement", 
-        "Virtual Try-On", "Agentic AI L1 Support", "Product Listing Standardization", 
-        "AI Agents Based Pricing Module", "Cost, Margin Visibility & Insights using LLM", 
-        "AI Trend Simulator", "Virtual Data Analyst (Text to SQL)", "Multilingual Call Analysis", 
-        "Customer Review Analysis", "Sales Co-Pilot", "Research Co-Pilot", 
-        "Product Copy Generator", "Multi-agent e-KYC & Onboarding", "Document / Report Audit", 
-        "RBI Circular Scraping & Insights Bot", "Visual Inspection", 
-        "AIoT based CCTV Surveillance", "Multilingual Voice Bot", "SOP Creation", "Other (Please specify)"
+    sow_type_options = [
+        "L1 Support Bot POC SOW",
+        "Ready Search POC Scope of Work Document",
+        "AI based Image Enhancement POC SOW",
+        "Beauty Advisor POC SOW",
+        "AI based Image Inspection POC SOW",
+        "Gen AI for SOP POC SOW",
+        "Project Scope Document",
+        "Gen AI Speech To Speech",
+        "PoC Scope Document"
     ]
-    solution_type = st.selectbox("1.1 Solution Type", solution_options)
-    final_solution = st.text_input("Specify Solution Name", placeholder="Enter solution...") if solution_type == "Other (Please specify)" else solution_type
+    selected_sow_name = st.selectbox("1.1 Scope of Work Type", sow_type_options)
 
-    engagement_options = ["Proof of Concept (PoC)", "Pilot", "MVP", "Production Rollout", "Assessment / Discovery", "Support"]
-    engagement_type = st.selectbox("1.2 Engagement Type", engagement_options)
+    # Sidebar architecture preview
+    st.divider()
+    st.header("🧩 Architecture Preview")
+    diagram_path_sidebar = SOW_DIAGRAM_MAP.get(selected_sow_name)
+    if diagram_path_sidebar and os.path.exists(diagram_path_sidebar):
+        st.image(diagram_path_sidebar, caption="Architecture Diagram", use_container_width=True)
+    else:
+        st.warning("No architecture diagram available.")
 
+    st.divider()
     industry_options = ["Retail / E-commerce", "BFSI", "Manufacturing", "Telecom", "Healthcare", "Energy / Utilities", "Logistics", "Media", "Government", "Other (specify)"]
-    industry_type = st.selectbox("1.3 Industry / Domain", industry_options)
+    industry_type = st.selectbox("1.2 Industry / Domain", industry_options)
     final_industry = st.text_input("Specify Industry", placeholder="Enter industry...") if industry_type == "Other (specify)" else industry_type
 
     duration = st.text_input("Timeline / Duration", "4 Weeks")
@@ -334,52 +379,69 @@ if st.button("✨ Generate SOW Document", type="primary", use_container_width=Tr
         st.error("⚠️ Business Objective is required.")
     else:
         import requests
-        with st.spinner(f"Architecting SOW for {final_solution}..."):
+        with st.spinner(f"Architecting {selected_sow_name}..."):
             url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key={api_key}"
             
             def get_md(df):
                 return df.to_markdown(index=False)
 
             prompt_text = f"""
-            Generate a COMPLETE formal enterprise Scope of Work (SOW) for {final_solution} in {final_industry}.
+            Generate a COMPLETE formal enterprise Scope of Work (SOW) for {selected_sow_name} in {final_industry}.
             
-            MANDATORY STRUCTURE:
+            STRICT PAGE & SECTION FLOW:
             1 TABLE OF CONTENTS (Indented sub-items)
             2 PROJECT OVERVIEW
-              2.1 OBJECTIVE
+              2.1 OBJECTIVE (Strictly 2-3 lines based on user input: {objective})
               2.2 PROJECT SPONSOR(S) / STAKEHOLDER(S) / PROJECT TEAM
+                  You MUST display the following FOUR sections clearly and distinctly, each with its own heading followed by the corresponding table:
+                  ### Partner Executive Sponsor
+                  {get_md(st.session_state.stakeholders["Partner"])}
+                  
+                  ### Customer Executive Sponsor
+                  {get_md(st.session_state.stakeholders["Customer"])}
+                  
+                  ### AWS Executive Sponsor
+                  {get_md(st.session_state.stakeholders["AWS"])}
+                  
+                  ### Project Escalation Contacts
+                  {get_md(st.session_state.stakeholders["Escalation"])}
               2.3 ASSUMPTIONS & DEPENDENCIES
-              2.4 PROJECT SUCCESS CRITERIA
+              2.4 PoC Success Criteria
             3 SCOPE OF WORK – TECHNICAL PROJECT PLAN
             4 SOLUTION ARCHITECTURE / ARCHITECTURAL DIAGRAM
-            5 RESOURCES & COST ESTIMATES
+            6 RESOURCES & COST ESTIMATES
+
+            CONTENT REQUIREMENTS FOR 2.4 (PoC Success Criteria):
+            Strictly include these 5 outcomes:
+            1. Accurate Compliance Validation: Accurate detection of compliance/non-compliance against design guidelines; identification of errors (blocking) vs warnings (quality).
+            2. Structured Metadata (Tags) Extraction: Auto-generation of tags including compliance status, CTA type, Offer type, Products shown, Brands shown, and Brand ambassador presence.
+            3. Ad Score Generation: Working framework (0-100) reflecting quality and compliance.
+            4. Recommendations & Feedback: Clear actionable recommendations (e.g. "increase resolution") aligned with guidelines.
+            5. Usability & Workflow Demonstration: Seamless end-to-end flow: Upload -> Compliance -> Summary -> Score -> Recommendations.
+
+            CONTENT REQUIREMENTS FOR 3 (SCOPE OF WORK - TECHNICAL PROJECT PLAN):
+            Strictly include these 4 phases:
+            1. Infrastructure Setup: Setup AWS services (Bedrock, S3, Lambda, etc.) and gather samples/guidelines.
+            2. Create Core Workflows: Banner Upload & Validation, Compliance & Tagging Flow, Issue Detection & Recommendation Flow, Ad Scoring Flow.
+            3. Backend Components: Implement Compliance Engine, build Tagging Module, and store in Amazon S3.
+            4. Testing and Feedback: Create PoC UI, validate accuracy against manual reviewer results, and gather stakeholder feedback.
 
             CONTENT RULES:
-            - NO filler text or introductory sentences between headers 2, 2.1, 2.2, and 2.3.
-            - Section 2 must start fresh and immediately with 2.1 Objective.
-            - Section 2.2 must keep all stakeholder sections distinct with provided tables.
-            - Section 2.3 must clearly segregate into "Dependencies:" and "Assumptions:" labels with bulleted lists.
-            - Remove ALL unnecessary asterisks (*) or markdown bolding marks (**) inside text or headings. 
-            - Use plain text output only for document content. No markdown symbols like bolding or italics in the body.
+            - Section 4 must include the text: "Specifics to be discussed basis POC".
+            - NO filler text or introductory sentences between headers.
+            - Remove ALL markdown bolding marks (**) inside headings or body text.
+            - Use plain text output only.
 
             INPUT DETAILS:
-            - Engagement Type: {engagement_type}
-            - Primary Objective: {objective}
-            - Success Metrics: {', '.join(outcomes)}
+            - SOW Document Type: {selected_sow_name}
             - Timeline: {duration}
             
-            STAKEHOLDER TABLES:
-            {get_md(st.session_state.stakeholders["Partner"])}
-            {get_md(st.session_state.stakeholders["Customer"])}
-            {get_md(st.session_state.stakeholders["AWS"])}
-            {get_md(st.session_state.stakeholders["Escalation"])}
-
             Tone: Professional consulting. Output: Markdown only.
             """
             
             payload = {
                 "contents": [{"parts": [{"text": prompt_text}]}],
-                "systemInstruction": {"parts": [{"text": "You are a senior Solutions Architect. You generate detailed SOW documents. Strictly follow numbering. NO filler text. NO markdown bolding marks or asterisks in the output text. Plain text output only."}]}
+                "systemInstruction": {"parts": [{"text": "You are a senior Solutions Architect. You generate detailed SOW documents. Strictly follow numbering and flow. Ensure stakeholder sections in 2.2 are distinct with their own sub-headers and tables. Sections 2.4 and 3 must be comprehensive as described. No markdown bolding."}]}
             }
             
             try:
@@ -408,14 +470,25 @@ if st.session_state.generated_sow:
     
     with tab_preview:
         st.markdown(f'<div class="sow-preview">', unsafe_allow_html=True)
-        st.markdown(st.session_state.generated_sow)
+        header_pattern = r'(?i)(^#*\s*4\s+SOLUTION ARCHITECTURE.*)'
+        match = re.search(header_pattern, st.session_state.generated_sow, re.MULTILINE)
+        
+        if match:
+            start, end = match.span()
+            st.markdown(st.session_state.generated_sow[:end])
+            diagram_path_out = SOW_DIAGRAM_MAP.get(selected_sow_name)
+            if diagram_path_out and os.path.exists(diagram_path_out):
+                st.image(diagram_path_out, caption=f"{selected_sow_name} Architecture", use_container_width=True)
+            st.markdown(st.session_state.generated_sow[end:])
+        else:
+            st.markdown(st.session_state.generated_sow)
         st.markdown('</div>', unsafe_allow_html=True)
     
     st.write("")
     
     if st.button("💾 Prepare Microsoft Word Document"):
         branding_info = {
-            'solution_name': final_solution,
+            'sow_name': selected_sow_name,
             'aws_pn_logo_bytes': aws_pn_logo.getvalue() if aws_pn_logo else None,
             'customer_logo_bytes': customer_logo.getvalue() if customer_logo else None,
             'oneture_logo_bytes': oneture_logo.getvalue() if oneture_logo else None,
@@ -423,12 +496,12 @@ if st.session_state.generated_sow:
             'doc_date_str': doc_date.strftime("%d %B %Y")
         }
         
-        docx_data = create_docx_logic(st.session_state.generated_sow, branding_info)
+        docx_data = create_docx_logic(st.session_state.generated_sow, branding_info, selected_sow_name)
         
         st.download_button(
             label="📥 Download Now (.docx)", 
             data=docx_data, 
-            file_name=f"SOW_{final_solution.replace(' ', '_')}.docx", 
+            file_name=f"SOW_{selected_sow_name.replace(' ', '_')}.docx", 
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", 
             use_container_width=True
         )
