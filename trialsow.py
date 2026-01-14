@@ -3,6 +3,20 @@ from datetime import date
 import io
 import re
 
+# NEW ADDITION – STEP 1
+# =========================
+ARCHITECTURE_IMAGE_MAP = {
+    "Beauty Advisor POC SOW": "diagrams/beauty_advisor.png",
+    "Ready Search POC Scope of Work Document": "diagrams/ready_search.png",
+    "AI based Image Inspection POC SOW": "diagrams/image_inspection.png",
+    "AI based Image Enhancement POC SOW": "diagrams/image_enhancement.png",
+    "L1 Support Bot POC SOW": "diagrams/l1_support_bot.png",
+    "Poc Scope Document": "diagrams/poc_scope.png",
+    "Gen AI Speech To Speech": "diagrams/speech_to_speech.png",
+    "Project Scope Document": "diagrams/project_scope.png",
+    "Gen AI for SOP POC SOW": "diagrams/genai_sop.png"
+}
+
 # --- CONFIGURATION ---
 st.set_page_config(
     page_title="GenAI SOW Architect", 
