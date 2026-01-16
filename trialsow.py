@@ -230,18 +230,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     date_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     date_p.add_run(branding_info["doc_date_str"]).bold = True
 
-    # --- Display Cost Table ---
-    st.subheader("Cost Table")
-    cost_data = SOW_COST_TABLE_MAP.get(selected_sow, {})
-
-    if cost_data:
-        df = pd.DataFrame(list(cost_data.items()), columns=["Cost Type", "Amount"])
-    # Convert links if any (example: you can add URLs here)
-    for col in df.columns:
-        df[col] = df[col].apply(lambda x: f"[{x}]({x})" if x.startswith("http") else x)
-        st.table(df)
-    else:
-        st.info("No cost table available for this SOW.")
+   
 
     
     doc.add_page_break()
@@ -281,6 +270,8 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                     p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
                 except:
                     doc.add_paragraph("[Architecture Diagram - Missing or Incompatible Format]")
+                    add_infra_cost_table(doc, sow_type_name)
+
                 doc.add_paragraph("")
             i += 1
             continue
