@@ -250,24 +250,22 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                 except:
                     doc.add_paragraph("[Architecture Diagram - Missing or Incompatible Format]")
                 doc.add_paragraph("")
-      
-
-        # Trigger for Section 6: Insert Cost Table
-        if "6 RESOURCES & COST ESTIMATES" in upper_text and (line.startswith('#') or line.startswith('6')):
+      # Trigger for Section 6: Insert Cost Table
+      if "6 RESOURCES & COST ESTIMATES" in upper_text and (line.startswith('#') or line.startswith('6')):
             doc.add_heading(clean_text, level=1)
             add_infra_cost_table(doc, sow_type_name)
             doc.add_paragraph("")
 
           
 
-        if line.startswith('|') and i + 1 < len(lines) and lines[i+1].strip().startswith('|'):
+      if line.startswith('|') and i + 1 < len(lines) and lines[i+1].strip().startswith('|'):
             table_lines = []
-            while i < len(lines) and lines[i].strip().startswith('|'):
+          while i < len(lines) and lines[i].strip().startswith('|'):
                 table_lines.append(lines[i].strip())
                 i += 1
-            if len(table_lines) >= 3:
+          if len(table_lines) >= 3:
                 data_lines = [l for l in table_lines if not set(l).issubset({'|', '-', ' ', ':'})]
-                if len(data_lines) >= 2:
+              if len(data_lines) >= 2:
                     headers = [c.strip() for c in data_lines[0].split('|') if c.strip()]
                     table = doc.add_table(rows=1, cols=len(headers))
                     table.style = 'Table Grid'
@@ -282,8 +280,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                                 row_cells[idx].text = c_text
                 doc.add_paragraph("")
             continue
-
-        if line.startswith('# '):
+      if line.startswith('# '):
             doc.add_heading(clean_text, level=1)
         elif line.startswith('## '):
             p = doc.add_heading(clean_text, level=2)
