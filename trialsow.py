@@ -208,13 +208,13 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
             continue
 
         # ---- SECTION 6: COST TABLE ----
-        if upper.startswith("6"):
+    if upper.startswith("6"):
             doc.add_heading(clean, 1)
             add_infra_cost_table(doc, sow_type_name)
             continue
 
         # ---- HEADINGS ----
-        if line.startswith("###"):
+    if line.startswith("###"):
             doc.add_heading(clean, 3)
         elif line.startswith("##"):
             doc.add_heading(clean, 2)
