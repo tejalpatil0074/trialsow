@@ -378,13 +378,6 @@ with st.sidebar:
     selected_sow_name = st.selectbox("1.1 Scope of Work Type", sow_type_options)
 
     # Sidebar architecture preview
-    st.divider()
-    st.header("🧩 Architecture Preview")
-    diagram_path_sidebar = SOW_DIAGRAM_MAP.get(selected_sow_name)
-    if diagram_path_sidebar and os.path.exists(diagram_path_sidebar):
-        st.image(diagram_path_sidebar, caption="Architecture Diagram", use_container_width=True)
-    else:
-        st.warning("No architecture diagram available.")
 
     st.divider()
     industry_options = ["Retail / E-commerce", "BFSI", "Manufacturing", "Telecom", "Healthcare", "Energy / Utilities", "Logistics", "Media", "Government", "Other (specify)"]
