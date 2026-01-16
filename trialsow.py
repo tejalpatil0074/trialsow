@@ -235,6 +235,32 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
         upper_text = clean_text.upper()
         doc.add_paragraph("")
 
+         # Trigger for Section 4: Insert Architecture Diagram
+        if "4 SOLUTION ARCHITECTURE" in upper_text and (line.startswith('#') or line.startswith('4')):
+            doc.add_heading(clean_text, level=1)
+            diagram_path = SOW_DIAGRAM_MAP.get(sow_type_name)
+            if diagram_path and os.path.exists(diagram_path):
+                doc.add_paragraph("")
+                try:
+                    doc.add_picture(diagram_path, width=Inches(6.0))
+                    p_cap = doc.add_paragraph(f"{sow_type_name} – Architecture Diagram")
+                    p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                except:
+                    doc.add_paragraph("[Architecture Diagram - Missing or Incompatible Format]")
+                doc.add_paragraph("")
+            i += 1
+            continue
+
+        # Trigger for Section 6: Insert Cost Table
+        if "6 RESOURCES & COST ESTIMATES" in upper_text and (line.startswith('#') or line.startswith('6')):
+            doc.add_heading(clean_text, level=1)
+            add_infra_cost_table(doc, sow_type_name)
+            doc.add_paragraph("")
+          
+            i += 1
+            continue
+
+
 
         if ("2 PROJECT OVERVIEW" in upper_text) and (line.startswith('#') or line.startswith('2')) and not overview_started:
             in_toc_section = False
