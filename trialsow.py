@@ -210,19 +210,6 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     date_p.add_run(branding_info["doc_date_str"]).bold = True
 
     doc.add_page_break()
-
-    
-
-
-    doc.add_paragraph("\n" * 4)
-    
-    date_p = doc.add_paragraph()
-    date_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = date_p.add_run(branding_info['doc_date_str'])
-    run.font.size = Pt(12)
-    run.font.bold = True
-    
-    doc.add_page_break()
     
     # --- CONTENT PROCESSING ---
     style = doc.styles['Normal']
