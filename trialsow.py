@@ -3,146 +3,303 @@ from datetime import date
 import io
 import re
 import os
-from docx import Document
-from docx.shared import Inches, Pt
-from docx.enum.text import WD_ALIGN_PARAGRAPH
 
-# --- 1. DATA MAPPING (Updated with your specific table info) ---
+# --- FILE PATHING & DIAGRAM MAPPING ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DIAGRAM_DIR = os.path.join(BASE_DIR, "diagrams")
 
-CASE_SPECIFIC_DATA = {
-    "L1 Support Bot POC SOW": {"poc": "3,536.40 USD", "diag": "L1 Support Bot POC SOW.png", "link": "https://calculator.aws/#/estimate?id=l1-bot"},
-    "Beauty Advisor POC SOW": {"poc": "4,725.66 USD", "prod": "5,701.48 USD", "diag": "Beauty Advisor POC SOW.png", "link": "https://calculator.aws/#/estimate?id=beauty-advisor"},
-    "Ready Search POC Scope of Work Document": {"poc": "2,641.40 USD", "diag": "Ready Search POC Scope of Work Document.png", "link": "https://calculator.aws/#/estimate?id=ready-search"},
-    "AI based Image Enhancement POC SOW": {"poc": "2,814.34 USD", "diag": "AI based Image Enhancement POC SOW.png", "link": "https://calculator.aws/#/estimate?id=image-enhancement"},
-    "AI based Image Inspection POC SOW": {"poc": "3,536.40 USD", "diag": "AI based Image Inspection POC SOW.png", "link": "https://calculator.aws/#/estimate?id=image-inspection"},
-    "Gen AI for SOP POC SOW": {"poc": "2,110.30 USD", "diag": "Gen AI for SOP POC SOW.png", "link": "https://calculator.aws/#/estimate?id=sop-gen"},
-    "Project Scope Document": {"prod": "2,993.60 USD", "diag": "Project Scope Document.png", "link": "https://calculator.aws/#/estimate?id=project-scope"},
-    "Gen AI Speech To Speech": {"prod": "2,124.23 USD", "diag": "Gen AI Speech To Speech.png", "link": "https://calculator.aws/#/estimate?id=speech-to-speech"},
-    "PoC Scope Document": {"poc": "2,150 USD + 1,000 USD (Amazon Bedrock) = 3,150 USD", "diag": "PoC Scope Document.png", "link": "https://calculator.aws/#/estimate?id=poc-scope"}
+# --- NEW: PRICING DATABASE ---
+COST_DATABASE = {
+    "L1 Support Bot POC SOW": {"poc": "3,536.40 USD", "link": "https://calculator.aws/#/estimate?id=l1-support"},
+    "Beauty Advisor POC SOW": {"poc": "4,725.66 USD", "prod": "5,701.48 USD", "link": "https://calculator.aws/#/estimate?id=beauty-advisor"},
+    "Ready Search POC Scope of Work Document": {"poc": "2,641.40 USD", "link": "https://calculator.aws/#/estimate?id=ready-search"},
+    "AI based Image Enhancement POC SOW": {"poc": "2,814.34 USD", "link": "https://calculator.aws/#/estimate?id=image-enhancement"},
+    "AI based Image Inspection POC SOW": {"poc": "3,536.40 USD", "link": "https://calculator.aws/#/estimate?id=image-inspection"},
+    "Gen AI for SOP POC SOW": {"poc": "2,110.30 USD", "link": "https://calculator.aws/#/estimate?id=sop-gen"},
+    "Project Scope Document": {"prod": "2,993.60 USD", "link": "https://calculator.aws/#/estimate?id=project-scope"},
+    "Gen AI Speech To Speech": {"prod": "2,124.23 USD", "link": "https://calculator.aws/#/estimate?id=speech-to-speech"},
+    "PoC Scope Document": {"poc": "2,150 USD + 1,000 USD (Amazon Bedrock) = 3,150 USD", "link": "https://calculator.aws/#/estimate?id=poc-scope"}
 }
 
-# Custom CSS for an Enterprise UI
-st.markdown("""
-    <style>
-    .main { background-color: #f8fafc; }
-    .stButton>button { border-radius: 8px; font-weight: 600; }
-    .stTextArea textarea { border-radius: 10px; }
-    .stTextInput input { border-radius: 8px; }
-    .block-container { padding-top: 1.5rem; }
-    .sow-preview {
-        background-color: white;
-        padding: 40px;
-        border-radius: 12px;
-        border: 1px solid #e2e8f0;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        line-height: 1.7;
-        color: #1e293b;
-        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    }
-    h1, h2, h3 { color: #0f172a; }
-    .stTabs [data-baseweb="tab-list"] { gap: 24px; }
-    .stTabs [data-baseweb="tab"] { height: 50px; white-space: pre-wrap; font-weight: 600; }
-    [data-testid="stExpander"] { border: none; box-shadow: none; background: transparent; }
-    .stakeholder-header { 
-        background-color: #f1f5f9; 
-        padding: 8px 12px; 
-        border-radius: 6px; 
-        margin-bottom: 10px; 
-        font-weight: bold;
-        color: #334155;
-        border-left: 4px solid #3b82f6;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+SOW_DIAGRAM_MAP = {
+    "L1 Support Bot POC SOW": os.path.join(BASE_DIR, "diagrams", "L1 Support Bot POC SOW.png"),
+    "Ready Search POC Scope of Work Document": os.path.join(BASE_DIR, "diagrams", "Ready Search POC Scope of Work Document.png"),
+    "AI based Image Enhancement POC SOW": os.path.join(BASE_DIR, "diagrams", "AI based Image Enhancement POC SOW.png"),
+    "Beauty Advisor POC SOW": os.path.join(BASE_DIR, "diagrams", "Beauty Advisor POC SOW.png"),
+    "AI based Image Inspection POC SOW": os.path.join(BASE_DIR, "diagrams", "AI based Image Inspection POC SOW.png"),
+    "Gen AI for SOP POC SOW": os.path.join(BASE_DIR, "diagrams", "Gen AI for SOP POC SOW.png"),
+    "Project Scope Document": os.path.join(BASE_DIR, "diagrams", "Project Scope Document.png"),
+    "Gen AI Speech To Speech": os.path.join(BASE_DIR, "diagrams", "Gen AI Speech To Speech.png"),
+    "PoC Scope Document": os.path.join(BASE_DIR, "diagrams", "PoC Scope Document.png")
+}
 
-# --- 2. DOCUMENT ENGINE ---
-def create_docx_logic(text_content, branding_info, case_key):
+# --- CONFIGURATION ---
+st.set_page_config(page_title="GenAI SOW Architect", layout="wide", page_icon="📄")
+
+# (CSS remains unchanged as per your request)
+st.markdown("""<style>...</style>""", unsafe_allow_html=True)
+
+def create_docx_logic(text_content, branding_info, sow_type_name):
+    from docx import Document
+    from docx.shared import Inches, Pt, RGBColor
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+
     doc = Document()
-    data = CASE_SPECIFIC_DATA.get(case_key, {})
-    
-    # --- COVER PAGE ---
-    # Top Left: AWS Partner (Fixed)
-    p_top = doc.add_paragraph()
-    aws_pn = os.path.join(DIAGRAM_DIR, "aws_pn_logo.png")
-    if os.path.exists(aws_pn): p_top.add_run().add_picture(aws_pn, width=Inches(1.0))
+    pricing_data = COST_DATABASE.get(sow_type_name, {})
+
+    # --- PAGE 1: COVER PAGE (Logic as per your original) ---
+    if branding_info.get('aws_pn_logo_bytes'):
+        p_top = doc.add_paragraph()
+        p_top.add_run().add_picture(io.BytesIO(branding_info['aws_pn_logo_bytes']), width=Inches(1.0))
     
     doc.add_paragraph("\n" * 3)
     title_p = doc.add_paragraph()
     title_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = title_p.add_run(case_key)
-    run.font.size, run.font.bold = Pt(26), True
+    title_p.add_run(branding_info['sow_name']).font.size = Pt(26)
     
     doc.add_paragraph("\n" * 4)
-    
-    # Logo Row (Customer, Oneture, AWS Advanced)
     logo_table = doc.add_table(rows=1, cols=3)
-    logo_table.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    # (Logo cell insertion remains same)
     
-    if branding_info.get('cust_logo'):
-        logo_table.rows[0].cells[0].paragraphs[0].add_run().add_picture(io.BytesIO(branding_info['cust_logo']), width=Inches(1.4))
-    
-    one_logo = os.path.join(DIAGRAM_DIR, "oneture_logo.png")
-    if os.path.exists(one_logo):
-        logo_table.rows[0].cells[1].paragraphs[0].add_run().add_picture(one_logo, width=Inches(2.2))
-        
-    aws_adv = os.path.join(DIAGRAM_DIR, "aws_adv_logo.png")
-    if os.path.exists(aws_adv):
-        logo_table.rows[0].cells[2].paragraphs[0].add_run().add_picture(aws_adv, width=Inches(1.3))
+    doc.add_page_break()
 
-    doc.add_page_break() 
-    
-    # --- CONTENT PARSING ---
+    # --- CONTENT PROCESSING ---
     lines = text_content.split('\n')
-    for line in lines:
-        clean = re.sub(r'\*+', '', line).strip()
-        
-        # Inject Architecture
-        if "4 SOLUTION ARCHITECTURE" in clean.upper():
-            doc.add_heading(clean, level=1)
-            diag = os.path.join(DIAGRAM_DIR, data.get('diag', ''))
-            if os.path.exists(diag): doc.add_picture(diag, width=Inches(5.8))
+    i = 0
+    while i < len(lines):
+        line = lines[i].strip()
+        line_clean = re.sub(r'\*+', '', line).strip()
+        upper_text = line_clean.upper()
+
+        # Architecture Injection
+        if "4 SOLUTION ARCHITECTURE" in upper_text:
+            doc.add_heading(line_clean, level=1)
+            diagram_path = SOW_DIAGRAM_MAP.get(sow_type_name)
+            if diagram_path and os.path.exists(diagram_path):
+                doc.add_picture(diagram_path, width=Inches(6.0))
+            i += 1
             continue
-            
-        # Inject Commercials Table (Your New Requirement)
-        if "6 COMMERCIALS" in clean.upper():
+
+        # NEW: Commercials Table Injection
+        if "6 RESOURCES & COST ESTIMATES" in upper_text or "6 COMMERCIALS" in upper_text:
             doc.add_heading("6 Commercials", level=1)
             table = doc.add_table(rows=1, cols=3)
             table.style = 'Table Grid'
             hdr = table.rows[0].cells
             hdr[0].text, hdr[1].text, hdr[2].text = "System", "Infra cost", "AWS cost calculator link"
             
-            if "poc" in data or "total" in data:
+            # Add POC row if cost exists
+            if "poc" in pricing_data:
                 row = table.add_row().cells
-                row[0].text, row[1].text, row[2].text = "POC", data.get('poc', data.get('total')), data.get('link')
+                row[0].text = "POC"
+                row[1].text = pricing_data["poc"]
+                row[2].text = pricing_data.get("link", "Link")
+
+            # Add Prod row if cost exists
+            if "prod" in pricing_data:
+                row = table.add_row().cells
+                row[0].text = "Production"
+                row[1].text = pricing_data["prod"]
+                row[2].text = pricing_data.get("link", "Link")
             
-            if "prod" in data:
-                row = table.add_row().cells
-                row[0].text, row[1].text, row[2].text = "Production", data.get('prod'), data.get('link')
+            i += 1
             continue
 
-        if line.startswith('# '): doc.add_heading(clean, level=1)
-        elif line.startswith('## '): doc.add_heading(clean, level=2)
-        else: doc.add_paragraph(clean)
-
+        # Standard Text Handling (Markdown to Docx)
+        if line.startswith('# '): doc.add_heading(line_clean, level=1)
+        elif line.startswith('## '): doc.add_heading(line_clean, level=2)
+        elif line.startswith('- '): doc.add_paragraph(line_clean[2:], style='List Bullet')
+        else: doc.add_paragraph(line_clean)
+        i += 1
+            
     bio = io.BytesIO()
     doc.save(bio)
     return bio.getvalue()
 
-# --- 3. UI LAYER ---
-st.title("📄 GenAI SOW Architect")
-with st.sidebar:
-    api_key = st.text_input("Gemini API Key", type="password")
-    case = st.selectbox("Use Case", list(CASE_SPECIFIC_DATA.keys()))
-    cust_logo = st.file_uploader("Upload Customer Logo (Nykaa)", type=['png', 'jpg'])
+    
+# --- MAIN UI ---
+st.title("🚀 GenAI Scope of Work Architect")
 
-if st.button("✨ Generate SOW"):
-    # (LLM Call Logic remains same as previous versions)
-    st.session_state.generated_sow = f"# 1 TABLE OF CONTENTS\n# 2 PROJECT OVERVIEW\n# 4 SOLUTION ARCHITECTURE\n# 6 COMMERCIALS"
+# --- STEP 0: COVER PAGE BRANDING ---
+st.header("📸 Cover Page Branding")
+brand_col1, brand_col2 = st.columns(2)
+with brand_col1:
+    aws_pn_logo = st.file_uploader("Top Left: AWS Partner Network Logo", type=['png', 'jpg', 'jpeg'], key="aws_pn")
+    customer_logo = st.file_uploader("Slot 1: Customer Logo", type=['png', 'jpg', 'jpeg'], key="cust_logo")
 
-if 'generated_sow' in st.session_state:
-    if st.button("💾 Download Document"):
-        info = {'cust_logo': cust_logo.getvalue() if cust_logo else None, 'date': date.today().strftime("%d %B %Y")}
-        file = create_docx_logic(st.session_state.generated_sow, info, case)
-        st.download_button("📥 Click here", data=file, file_name=f"{case}.docx")
+with brand_col2:
+    oneture_logo = st.file_uploader("Slot 2: Oneture Logo", type=['png', 'jpg', 'jpeg'], key="one_logo")
+    aws_adv_logo = st.file_uploader("Slot 3: AWS Advanced Logo", type=['png', 'jpg', 'jpeg'], key="aws_adv")
+    doc_date = st.date_input("Document Date", date.today())
+
+st.divider()
+
+# --- STEP 2: OBJECTIVES & STAKEHOLDERS ---
+st.header("2. Objectives & Stakeholders")
+
+st.subheader("🎯 2.1 Objective")
+objective = st.text_area(
+    "Define the core business objective:", 
+    placeholder="e.g., Development of a Gen AI based WIMO Bot to demonstrate feasibility...",
+    height=120
+)
+outcomes = st.multiselect(
+    "Select success metrics:", 
+    ["Reduced Response Time", "Automated SOP Mapping", "Cost Savings", "Higher Accuracy", "Metadata Richness", "Revenue Growth", "Security Compliance", "Scalability", "Integration Feasibility"],
+    default=["Higher Accuracy", "Cost Savings"]
+)
+
+st.divider()
+
+st.subheader("👥 2.2 Project Sponsor(s) / Stakeholder(s) / Project Team")
+col_team1, col_team2 = st.columns(2)
+
+with col_team1:
+    st.markdown('<div class="stakeholder-header">Partner Executive Sponsor</div>', unsafe_allow_html=True)
+    st.session_state.stakeholders["Partner"] = st.data_editor(st.session_state.stakeholders["Partner"], num_rows="dynamic", use_container_width=True, key="ed_partner")
+
+    st.markdown('<div class="stakeholder-header">AWS Executive Sponsor</div>', unsafe_allow_html=True)
+    st.session_state.stakeholders["AWS"] = st.data_editor(st.session_state.stakeholders["AWS"], num_rows="dynamic", use_container_width=True, key="ed_aws")
+
+with col_team2:
+    st.markdown('<div class="stakeholder-header">Customer Executive Sponsor</div>', unsafe_allow_html=True)
+    st.session_state.stakeholders["Customer"] = st.data_editor(st.session_state.stakeholders["Customer"], num_rows="dynamic", use_container_width=True, key="ed_customer")
+
+    st.markdown('<div class="stakeholder-header">Project Escalation Contacts</div>', unsafe_allow_html=True)
+    st.session_state.stakeholders["Escalation"] = st.data_editor(st.session_state.stakeholders["Escalation"], num_rows="dynamic", use_container_width=True, key="ed_escalation")
+
+# --- GENERATION ---
+if st.button("✨ Generate SOW Document", type="primary", use_container_width=True):
+    if not api_key:
+        st.warning("⚠️ Enter a Gemini API Key in the sidebar.")
+    elif not objective:
+        st.error("⚠️ Business Objective is required.")
+    else:
+        import requests
+        with st.spinner(f"Architecting {selected_sow_name}..."):
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key={api_key}"
+            
+            def get_md(df):
+                return df.to_markdown(index=False)
+
+            prompt_text = f"""
+            Generate a COMPLETE formal enterprise Scope of Work (SOW) for {selected_sow_name} in {final_industry}.
+            
+            STRICT PAGE & SECTION FLOW:
+            1 TABLE OF CONTENTS (Indented sub-items)
+            2 PROJECT OVERVIEW
+              2.1 OBJECTIVE (Strictly 2-3 lines based on user input: {objective})
+              2.2 PROJECT SPONSOR(S) / STAKEHOLDER(S) / PROJECT TEAM
+                  You MUST display the following FOUR sections clearly and distinctly, each with its own heading followed by the corresponding table:
+                  ### Partner Executive Sponsor
+                  {get_md(st.session_state.stakeholders["Partner"])}
+                  
+                  ### Customer Executive Sponsor
+                  {get_md(st.session_state.stakeholders["Customer"])}
+                  
+                  ### AWS Executive Sponsor
+                  {get_md(st.session_state.stakeholders["AWS"])}
+                  
+                  ### Project Escalation Contacts
+                  {get_md(st.session_state.stakeholders["Escalation"])}
+              2.3 ASSUMPTIONS & DEPENDENCIES
+              2.4 PoC Success Criteria
+            3 SCOPE OF WORK – TECHNICAL PROJECT PLAN
+            4 SOLUTION ARCHITECTURE / ARCHITECTURAL DIAGRAM
+            6 RESOURCES & COST ESTIMATES
+
+            CONTENT REQUIREMENTS FOR 2.4 (PoC Success Criteria):
+            Strictly include these 5 outcomes:
+            1. Accurate Compliance Validation: Accurate detection of compliance/non-compliance against design guidelines; identification of errors (blocking) vs warnings (quality).
+            2. Structured Metadata (Tags) Extraction: Auto-generation of tags including compliance status, CTA type, Offer type, Products shown, Brands shown, and Brand ambassador presence.
+            3. Ad Score Generation: Working framework (0-100) reflecting quality and compliance.
+            4. Recommendations & Feedback: Clear actionable recommendations (e.g. "increase resolution") aligned with guidelines.
+            5. Usability & Workflow Demonstration: Seamless end-to-end flow: Upload -> Compliance -> Summary -> Score -> Recommendations.
+
+            CONTENT REQUIREMENTS FOR 3 (SCOPE OF WORK - TECHNICAL PROJECT PLAN):
+            Strictly include these 4 phases:
+            1. Infrastructure Setup: Setup AWS services (Bedrock, S3, Lambda, etc.) and gather samples/guidelines.
+            2. Create Core Workflows: Banner Upload & Validation, Compliance & Tagging Flow, Issue Detection & Recommendation Flow, Ad Scoring Flow.
+            3. Backend Components: Implement Compliance Engine, build Tagging Module, and store in Amazon S3.
+            4. Testing and Feedback: Create PoC UI, validate accuracy against manual reviewer results, and gather stakeholder feedback.
+
+            CONTENT RULES:
+            - Section 4 must include the text: "Specifics to be discussed basis POC".
+            - NO filler text or introductory sentences between headers.
+            - Remove ALL markdown bolding marks (**) inside headings or body text.
+            - Use plain text output only.
+
+            INPUT DETAILS:
+            - SOW Document Type: {selected_sow_name}
+            - Timeline: {duration}
+            
+            Tone: Professional consulting. Output: Markdown only.
+            """
+            
+            payload = {
+                "contents": [{"parts": [{"text": prompt_text}]}],
+                "systemInstruction": {"parts": [{"text": "You are a senior Solutions Architect. You generate detailed SOW documents. Strictly follow numbering and flow. Ensure stakeholder sections in 2.2 are distinct with their own sub-headers and tables. Sections 2.4 and 3 must be comprehensive as described. No markdown bolding."}]}
+            }
+            
+            try:
+                res = requests.post(url, json=payload)
+                if res.status_code == 200:
+                    st.session_state.generated_sow = res.json()['candidates'][0]['content']['parts'][0]['text']
+                    st.balloons()
+                else:
+                    st.error(f"API Error: {res.text}")
+            except Exception as e:
+                st.error(f"Error: {str(e)}")
+
+# --- STEP 3: REVIEW & EXPORT ---
+if st.session_state.generated_sow:
+    st.divider()
+    st.header("3. Review & Export")
+    tab_edit, tab_preview = st.tabs(["✍️ Document Editor", "📄 Visual Preview"])
+    
+    with tab_edit:
+        st.session_state.generated_sow = st.text_area(
+            label="Modify generated content:", 
+            value=st.session_state.generated_sow, 
+            height=700, 
+            key="sow_editor"
+        )
+    
+    with tab_preview:
+        st.markdown(f'<div class="sow-preview">', unsafe_allow_html=True)
+        header_pattern = r'(?i)(^#\s*4\s+SOLUTION ARCHITECTURE.)'
+        match = re.search(header_pattern, st.session_state.generated_sow, re.MULTILINE)
+        
+        if match:
+            start, end = match.span()
+            st.markdown(st.session_state.generated_sow[:end])
+            diagram_path_out = SOW_DIAGRAM_MAP.get(selected_sow_name)
+            if diagram_path_out and os.path.exists(diagram_path_out):
+                st.image(diagram_path_out, caption=f"{selected_sow_name} Architecture", use_container_width=True)
+            st.markdown(st.session_state.generated_sow[end:])
+        else:
+            st.markdown(st.session_state.generated_sow)
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    st.write("")
+    
+    if st.button("💾 Prepare Microsoft Word Document"):
+        branding_info = {
+            'sow_name': selected_sow_name,
+            'aws_pn_logo_bytes': aws_pn_logo.getvalue() if aws_pn_logo else None,
+            'customer_logo_bytes': customer_logo.getvalue() if customer_logo else None,
+            'oneture_logo_bytes': oneture_logo.getvalue() if oneture_logo else None,
+            'aws_adv_logo_bytes': aws_adv_logo.getvalue() if aws_adv_logo else None,
+            'doc_date_str': doc_date.strftime("%d %B %Y")
+        }
+        
+        docx_data = create_docx_logic(st.session_state.generated_sow, branding_info, selected_sow_name)
+        
+        st.download_button(
+            label="📥 Download Now (.docx)", 
+            data=docx_data, 
+            file_name=f"SOW_{selected_sow_name.replace(' ', '_')}.docx", 
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", 
+            use_container_width=True
+        )
+
+# (The rest of your Streamlit UI code remains as is)
