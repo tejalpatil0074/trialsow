@@ -86,7 +86,7 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # --- CACHED UTILITIES ---
-def create_docx_logic(text_content, branding_info, sow_type_name):
+    def create_docx_logic(text_content, branding_info, sow_type_name):
     """
     Generates the Word document with strict page isolation and markdown cleanup.
     """
@@ -135,28 +135,26 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
         else:
             cell.paragraphs[0].add_run("Customer Logo").bold = True
 
-# Oneture logo (fixed)
-cell = logo_table.rows[0].cells[1]
-cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-cell.paragraphs[0].add_run().add_picture(
+    # Oneture logo (fixed)
+    cell = logo_table.rows[0].cells[1]
+    cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+    cell.paragraphs[0].add_run().add_picture(
     ONETURE_LOGO, width=Inches(2.2)
-)
+    )
 
-# AWS Advanced Tier logo (fixed)
-cell = logo_table.rows[0].cells[2]
-cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-cell.paragraphs[0].add_run().add_picture(
+    # AWS Advanced Tier logo (fixed)
+    cell = logo_table.rows[0].cells[2]
+    cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+    cell.paragraphs[0].add_run().add_picture(
     AWS_ADV_LOGO, width=Inches(1.8)
-)
+    )
 
-doc.add_paragraph("\n" * 3)
+    doc.add_paragraph("\n" * 3)
 
-# Date
-date_p = doc.add_paragraph()
-date_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-date_p.add_run(branding_info["doc_date_str"]).bold = True
-
-doc.add_page_break()
+    # Date
+    date_p = doc.add_paragraph()
+    date_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    date_p.add_run(branding_info["doc_date_str"]).bold = True
 
     
     doc.add_page_break()
