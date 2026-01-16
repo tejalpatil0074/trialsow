@@ -492,14 +492,9 @@ if st.session_state.generated_sow:
         match = re.search(header_pattern, st.session_state.generated_sow, re.MULTILINE)
         
         if match:
-            start, end = match.span()
-            st.markdown(st.session_state.generated_sow[:end])
-            diagram_path_out = SOW_DIAGRAM_MAP.get(selected_sow_name)
-            if diagram_path_out and os.path.exists(diagram_path_out):
-                st.image(diagram_path_out, caption=f"{selected_sow_name} Architecture", use_container_width=True)
-            st.markdown(st.session_state.generated_sow[end:])
-        else:
-            st.markdown(st.session_state.generated_sow)
+    start, end = match.span()
+    st.markdown(st.session_state.generated_sow)
+
         st.markdown('</div>', unsafe_allow_html=True)
     
     st.write("")
