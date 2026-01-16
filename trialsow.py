@@ -4,7 +4,7 @@ import io
 import re
 import os
 
-# --- FILE PATHING & DIAGRAM MAPPING ---
+    # --- FILE PATHING & DIAGRAM MAPPING ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 ASSETS_DIR = os.path.join(BASE_DIR, "diagrams")
@@ -14,34 +14,35 @@ ONETURE_LOGO = os.path.join(ASSETS_DIR, "oneture logo1.jpg")
 AWS_ADV_LOGO = os.path.join(ASSETS_DIR, "aws advanced logo1.jpg")
 
 
-SOW_DIAGRAM_MAP = {
-    "L1 Support Bot POC SOW":
-        os.path.join(BASE_DIR, "diagrams", "L1 Support Bot POC SOW.png"),
 
-    "Ready Search POC Scope of Work Document":
-        os.path.join(BASE_DIR, "diagrams", "Ready Search POC Scope of Work Document.png"),
+    SOW_DIAGRAM_MAP = {
+        "L1 Support Bot POC SOW":
+            os.path.join(BASE_DIR, "diagrams", "L1 Support Bot POC SOW.png"),
+ 
+        "Ready Search POC Scope of Work Document":
+            os.path.join(BASE_DIR, "diagrams", "Ready Search POC Scope of Work Document.png"),
 
-    "AI based Image Enhancement POC SOW":
-        os.path.join(BASE_DIR, "diagrams", "AI based Image Enhancement POC SOW.png"),
+        "AI based Image Enhancement POC SOW":
+            os.path.join(BASE_DIR, "diagrams", "AI based Image Enhancement POC SOW.png"),
 
-    "Beauty Advisor POC SOW":
-        os.path.join(BASE_DIR, "diagrams", "Beauty Advisor POC SOW.png"),
+        "Beauty Advisor POC SOW":
+            os.path.join(BASE_DIR, "diagrams", "Beauty Advisor POC SOW.png"),
 
-    "AI based Image Inspection POC SOW":
-        os.path.join(BASE_DIR, "diagrams", "AI based Image Inspection POC SOW.png"),
+        "AI based Image Inspection POC SOW":
+            os.path.join(BASE_DIR, "diagrams", "AI based Image Inspection POC SOW.png"),
 
-    "Gen AI for SOP POC SOW":
-        os.path.join(BASE_DIR, "diagrams", "Gen AI for SOP POC SOW.png"),
+        "Gen AI for SOP POC SOW":
+            os.path.join(BASE_DIR, "diagrams", "Gen AI for SOP POC SOW.png"),
 
-    "Project Scope Document":
-        os.path.join(BASE_DIR, "diagrams", "Project Scope Document.png"),
+        "Project Scope Document":
+            os.path.join(BASE_DIR, "diagrams", "Project Scope Document.png"),
 
-    "Gen AI Speech To Speech":
-        os.path.join(BASE_DIR, "diagrams", "Gen AI Speech To Speech.png"),
+        "Gen AI Speech To Speech":
+            os.path.join(BASE_DIR, "diagrams", "Gen AI Speech To Speech.png"),
 
-    "PoC Scope Document":
-        os.path.join(BASE_DIR, "diagrams", "PoC Scope Document.png")
-}
+        "PoC Scope Document":
+            os.path.join(BASE_DIR, "diagrams", "PoC Scope Document.png")
+    }
 
 # --- CONFIGURATION ---
 st.set_page_config(
@@ -86,7 +87,8 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # --- CACHED UTILITIES ---
-    def create_docx_logic(text_content, branding_info, sow_type_name):
+def create_docx_logic(text_content, branding_info, sow_type_name):
+
     """
     Generates the Word document with strict page isolation and markdown cleanup.
     """
@@ -125,15 +127,16 @@ st.markdown("""
     logo_table.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
     # Customer logo (user uploaded)
-    cell = logo_table.rows[0].cells[0]
-    cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-        if branding_info.get("customer_logo_bytes"):
-             cell.paragraphs[0].add_run().add_picture(
-             io.BytesIO(branding_info["customer_logo_bytes"]),
-             width=Inches(1.8)
-        )
-        else:
-            cell.paragraphs[0].add_run("Customer Logo").bold = True
+   cell = logo_table.rows[0].cells[0]
+cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+if branding_info.get("customer_logo_bytes"):
+    cell.paragraphs[0].add_run().add_picture(
+        io.BytesIO(branding_info["customer_logo_bytes"]),
+        width=Inches(1.8)
+    )
+else:
+    cell.paragraphs[0].add_run("Customer Logo").bold = True
 
     # Oneture logo (fixed)
     cell = logo_table.rows[0].cells[1]
