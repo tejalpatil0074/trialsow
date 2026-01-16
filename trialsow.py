@@ -198,14 +198,17 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
         "6  Commercials"
     ]
     # ---- SECTION 4: ARCH DIAGRAM ----
-    if upper.startswith("4 SOLUTION ARCHITECTURE"):
-            doc.add_heading(clean, 1)
-            diagram = SOW_DIAGRAM_MAP.get(sow_type_name)
-            if diagram and os.path.exists(diagram):
-                doc.add_picture(diagram, width=Inches(6))
-                cap = doc.add_paragraph(f"{sow_type_name} – Architecture Diagram")
-                cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
-       continue
+   if upper.startswith("4 SOLUTION ARCHITECTURE"):
+    doc.add_heading(clean, 1)
+
+    diagram = SOW_DIAGRAM_MAP.get(sow_type_name)
+    if diagram and os.path.exists(diagram):
+        doc.add_picture(diagram, width=Inches(6))
+        cap = doc.add_paragraph(f"{sow_type_name} – Architecture Diagram")
+        cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    continue
+
 
         # ---- SECTION 6: COST TABLE ----
     if upper.startswith("6"):
