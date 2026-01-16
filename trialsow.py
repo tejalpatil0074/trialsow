@@ -205,7 +205,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                 doc.add_picture(diagram, width=Inches(6))
                 cap = doc.add_paragraph(f"{sow_type_name} – Architecture Diagram")
                 cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    continue
+                continue
 
         # ---- SECTION 6: COST TABLE ----
     if upper.startswith("6"):
