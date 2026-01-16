@@ -42,6 +42,22 @@ SOW_DIAGRAM_MAP = {
         os.path.join(BASE_DIR, "diagrams", "PoC Scope Document.png")
 }
 
+# --- COST TABLE MAPPING ---
+SOW_COST_TABLE_MAP = {
+    "L1 Support Bot POC SOW": {"poc_cost": "3,536.40 USD"},
+    "Beauty Advisor POC SOW": {
+        "poc_cost": "4,525.66 USD + 200 USD (Amazon Bedrock Cost) = 4,725.66",
+        "prod_cost": "4,525.66 USD + 1,175.82 USD (Amazon Bedrock Cost) = 5,701.48"
+    },
+    "Ready Search POC Scope of Work Document":{"poc_cost": "2,641.40 USD"},
+    "AI based Image Enhancement POC SOW": {"poc_cost": "2,814.34 USD"},
+    "AI based Image Inspection POC SOW": {"poc_cost": "3,536.40 USD"},
+    "Gen AI for SOP POC SOW": {"poc_cost": "2,110.30 USD"},
+    "Project Scope Document": {"prod_cost": "2,993.60 USD"},
+    "Gen AI Speech To Speech": {"prod_cost": "2,124.23 USD"},
+    "PoC Scope Document": {"amazon_bedrock": "1,000 USD", "total": "$ 3,150"},
+}
+
 
 
 # --- CONFIGURATION ---
@@ -85,6 +101,60 @@ st.markdown("""
     }
     </style>
     """, unsafe_allow_html=True)
+
+# >>> NEW ADDITION: Function to add Cost Table to Word properly
+def add_infra_cost_table(doc, sow_type_name):
+    """Adds a formatted cost table in Word document per SOW"""
+    from docx.shared import Inches
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+
+    cost_data = SOW_COST_TABLE_MAP.get(sow_type_name)
+    if not cost_data:
+        return
+
+    doc.add_paragraph("")  # spacing
+
+    table = doc.add_table(rows=1, cols=3)
+    table.style = "Table Grid"
+    hdr = table.rows[0].cells
+    hdr[0].text = "System"
+    hdr[1].text = "Infra Cost"
+    hdr[2].text = "AWS Cost Calculator Link"
+
+    aws_link = "https://calculator.aws/#/"
+
+    # Add rows for POC and Production
+    if "poc_cost" in cost_data:
+        row = table.add_row().cells
+        row[0].text = "POC"
+        row[1].text = cost_data["poc_cost"]
+        row[2].text = aws_link
+
+    if "prod_cost" in cost_data:
+        row = table.add_row().cells
+        row[0].text = "Production"
+        row[1].text = cost_data["prod_cost"]
+        row[2].text = aws_link
+
+    # Add extra rows if needed (for PoC Scope Document)
+    if "amazon_bedrock" in cost_data:
+        row = table.add_row().cells
+        row[0].text = "Amazon Bedrock"
+        row[1].text = cost_data["amazon_bedrock"]
+        row[2].text = aws_link
+    if "total" in cost_data:
+        row = table.add_row().cells
+        row[0].text = "Total Cost"
+        row[1].text = cost_data["total"]
+        row[2].text = aws_link
+
+    # Center align the table
+    for row in table.rows:
+        for cell in row.cells:
+            for paragraph in cell.paragraphs:
+                paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    doc.add_paragraph("")  # spacing after table
 
 # --- CACHED UTILITIES ---
 def create_docx_logic(text_content, branding_info, sow_type_name):
@@ -159,6 +229,19 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     date_p = doc.add_paragraph()
     date_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     date_p.add_run(branding_info["doc_date_str"]).bold = True
+
+    # --- Display Cost Table ---
+    st.subheader("Cost Table")
+    cost_data = SOW_COST_TABLE_MAP.get(selected_sow, {})
+
+    if cost_data:
+        df = pd.DataFrame(list(cost_data.items()), columns=["Cost Type", "Amount"])
+    # Convert links if any (example: you can add URLs here)
+    for col in df.columns:
+        df[col] = df[col].apply(lambda x: f"[{x}]({x})" if x.startswith("http") else x)
+        st.table(df)
+    else:
+        st.info("No cost table available for this SOW.")
 
     
     doc.add_page_break()
