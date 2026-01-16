@@ -233,13 +233,14 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
         line_clean = re.sub(r'\*+', '', line).strip()
         clean_text = re.sub(r'^#+\s*', '', line_clean).strip()
         upper_text = clean_text.upper()
+        doc.add_paragraph("")
+        
 
         # Trigger for Section 4: Insert Architecture Diagram
         if "4 SOLUTION ARCHITECTURE" in upper_text and (line.startswith('#') or line.startswith('4')):
             doc.add_heading(clean_text, level=1)
             diagram_path = SOW_DIAGRAM_MAP.get(sow_type_name)
             if diagram_path and os.path.exists(diagram_path):
-                doc.add_paragraph("")
                 try:
                     doc.add_picture(diagram_path, width=Inches(6.0))
                     p_cap = doc.add_paragraph(f"{sow_type_name} – Architecture Diagram")
