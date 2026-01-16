@@ -225,7 +225,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     "3  Scope of Work - Technical Project Plan",
     "4  Solution Architecture / Architectural Diagram",
     "6  Commercials"
-    ]
+   ]
 
     for line in toc_lines:
         if '.' in line:  # treat 2.1, 2.2, etc. as level 2
@@ -272,27 +272,70 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                 except:
                     doc.add_paragraph("[Architecture Diagram - Missing or Incompatible Format]")
                 doc.add_paragraph("")
-            i += 1
-            continue
+      
 
         # Trigger for Section 6: Insert Cost Table
         if "6 RESOURCES & COST ESTIMATES" in upper_text and (line.startswith('#') or line.startswith('6')):
             doc.add_heading(clean_text, level=1)
             add_infra_cost_table(doc, sow_type_name)
             doc.add_paragraph("")
-          
-            i += 1
-            continue
 
 
         if ("2 PROJECT OVERVIEW" in upper_text) and (line.startswith('#') or line.startswith('2')) and not overview_started:
             in_toc_section = False
             overview_started = True
             doc.add_heading(clean_text, level=1)
-            i += 1
+    
+
+        if "1 TABLE OF CONTENTS" in upper_text:
+            if not toc_already_added:
+                in_toc_section = True
+                toc_already_added = True
+                doc.add_heading("1 TABLE OF CONTENTS", level=1)
+          
+
+        if line.startswith('|') and i + 1 < len(lines) and lines[i+1].strip().startswith('|'):
+            table_lines = []
+            while i < len(lines) and lines[i].strip().startswith('|'):
+                table_lines.append(lines[i].strip())
+                i += 1
+            if len(table_lines) >= 3:
+                data_lines = [l for l in table_lines if not set(l).issubset({'|', '-', ' ', ':'})]
+                if len(data_lines) >= 2:
+                    headers = [c.strip() for c in data_lines[0].split('|') if c.strip()]
+                    table = doc.add_table(rows=1, cols=len(headers))
+                    table.style = 'Table Grid'
+                    hdr_cells = table.rows[0].cells
+                    for idx, h in enumerate(headers):
+                        hdr_cells[idx].text = h
+                    for row_str in data_lines[1:]:
+                        row_cells = table.add_row().cells
+                        r_data = [c.strip() for c in row_str.split('|') if c.strip()]
+                        for idx, c_text in enumerate(r_data):
+                            if idx < len(row_cells):
+                                row_cells[idx].text = c_text
+                doc.add_paragraph("")
             continue
 
-      
+        if line.startswith('# '):
+            doc.add_heading(clean_text, level=1)
+        elif line.startswith('## '):
+            p = doc.add_heading(clean_text, level=2)
+            if in_toc_section:
+                p.paragraph_format.left_indent = Inches(0.4)
+        elif line.startswith('### '):
+            p = doc.add_heading(clean_text, level=3)
+            if in_toc_section:
+                p.paragraph_format.left_indent = Inches(0.8)
+        elif line.startswith('- ') or line.startswith('* '):
+            bullet_text = re.sub(r'^[-*]\s*', '', clean_text)
+            p = doc.add_paragraph(bullet_text, style='List Bullet')
+            if in_toc_section:
+                p.paragraph_format.left_indent = Inches(0.4)
+        else:
+            p = doc.add_paragraph(clean_text)
+            if in_toc_section and len(clean_text) > 3 and clean_text[0].isdigit():
+                 p.paragraph_format.left_indent = Inches(0.4)
             
             # Segregation bolding logic for all key sections and stakeholder sub-headers
             segregation_keywords = [
