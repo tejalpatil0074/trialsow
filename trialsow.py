@@ -260,8 +260,6 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
             i += 1
             continue
 
-        doc.add_page_break()
-
         if ("2 PROJECT OVERVIEW" in upper_text) and (line.startswith('#') or line.startswith('2')) and not overview_started:
             in_toc_section = False
             overview_started = True
