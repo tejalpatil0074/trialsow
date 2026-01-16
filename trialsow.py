@@ -237,9 +237,8 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
 
     
   
-
-        # Trigger for Section 4: Insert Architecture Diagram
-        if "4 SOLUTION ARCHITECTURE" in upper_text and (line.startswith('#') or line.startswith('4')):
+    # Trigger for Section 4: Insert Architecture Diagram
+      if "4 SOLUTION ARCHITECTURE" in upper_text and (line.startswith('#') or line.startswith('4')):
             doc.add_heading(clean_text, level=1)
             diagram_path = SOW_DIAGRAM_MAP.get(sow_type_name)
             if diagram_path and os.path.exists(diagram_path):
