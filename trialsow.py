@@ -197,20 +197,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
         "4  Solution Architecture / Architectural Diagram",
         "6  Commercials"
     ]
-
-    for item in toc:
-        level = 2 if "." in item else 1
-        doc.add_heading(item, level=level)
-
-    doc.add_page_break()
-
-    # ================= MAIN CONTENT =================
-    lines = text_content.split("\n")
-
-    for line in lines:
-        clean = re.sub(r"[#*]+", "", line).strip()
-        upper = clean.upper()
-
+  
         # ---- SECTION 4: ARCH DIAGRAM ----
         if upper.startswith("4 SOLUTION ARCHITECTURE"):
             doc.add_heading(clean, 1)
