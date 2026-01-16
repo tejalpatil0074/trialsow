@@ -236,28 +236,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     doc.add_paragraph("")  # spacing after TOC
 
     
-    # --- CONTENT PROCESSING ---
-    style = doc.styles['Normal']
-    style.font.name = 'Arial'
-    style.font.size = Pt(11)
-
-    lines = text_content.split('\n')
-    i = 0
-    in_toc_section = False
-    toc_already_added = False
-    overview_started = False
-
-    while i < len(lines):
-        line = lines[i].strip()
-        if not line:
-            if i > 0 and lines[i-1].strip():
-                doc.add_paragraph("")
-            i += 1
-            continue
-
-        line_clean = re.sub(r'\*+', '', line).strip()
-        clean_text = re.sub(r'^#+\s*', '', line_clean).strip()
-        upper_text = clean_text.upper()
+  
 
         # Trigger for Section 4: Insert Architecture Diagram
         if "4 SOLUTION ARCHITECTURE" in upper_text and (line.startswith('#') or line.startswith('4')):
@@ -280,18 +259,6 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
             add_infra_cost_table(doc, sow_type_name)
             doc.add_paragraph("")
 
-
-        if ("2 PROJECT OVERVIEW" in upper_text) and (line.startswith('#') or line.startswith('2')) and not overview_started:
-            in_toc_section = False
-            overview_started = True
-            doc.add_heading(clean_text, level=1)
-    
-
-        if "1 TABLE OF CONTENTS" in upper_text:
-            if not toc_already_added:
-                in_toc_section = True
-                toc_already_added = True
-                doc.add_heading("1 TABLE OF CONTENTS", level=1)
           
 
         if line.startswith('|') and i + 1 < len(lines) and lines[i+1].strip().startswith('|'):
