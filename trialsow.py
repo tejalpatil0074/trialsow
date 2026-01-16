@@ -216,11 +216,11 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
         # ---- HEADINGS ----
     if line.startswith("###"):
             doc.add_heading(clean, 3)
-        elif line.startswith("##"):
+      elif line.startswith("##"):
             doc.add_heading(clean, 2)
-        elif line.startswith("#"):
+      elif line.startswith("#"):
             doc.add_heading(clean, 1)
-        else:
+      else:
             doc.add_paragraph(clean)
 
     output = io.BytesIO()
