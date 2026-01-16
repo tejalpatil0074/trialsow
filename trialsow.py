@@ -260,7 +260,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
 
     if line.startswith('|') and i + 1 < len(lines) and lines[i+1].strip().startswith('|'):
             table_lines = []
-        while i < len(lines) and lines[i].strip().startswith('|'):
+         while i < len(lines) and lines[i].strip().startswith('|'):
                 table_lines.append(lines[i].strip())
                 i += 1
           if len(table_lines) >= 3:
