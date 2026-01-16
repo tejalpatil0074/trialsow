@@ -90,15 +90,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     doc = Document()
     
     # --- PAGE 1: COVER PAGE ---
-    if branding_info.get('aws_pn_logo_bytes'):
-        p_top = doc.add_paragraph()
-        p_top.alignment = WD_ALIGN_PARAGRAPH.LEFT
-        try:
-            run = p_top.add_run()
-            run.add_picture(io.BytesIO(branding_info['aws_pn_logo_bytes']), width=Inches(1.0))
-        except:
-            p_top.add_run("aws partner network").bold = True
-
+   
     doc.add_paragraph("\n" * 3)
     
     title_p = doc.add_paragraph()
@@ -115,24 +107,11 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     
     doc.add_paragraph("\n" * 4)
     
-    logo_table = doc.add_table(rows=1, cols=3)
-    logo_table.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    
-    def insert_logo_to_cell(cell, bytes_data, width_val, fallback_text):
-        cell.paragraphs[0].text = ""
-        p = cell.paragraphs[0]
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        if bytes_data:
-            try:
-                p.add_run().add_picture(io.BytesIO(bytes_data), width=Inches(width_val))
-            except:
-                p.add_run(fallback_text).bold = True
-        else:
-            p.add_run(fallback_text).bold = True
-
-    insert_logo_to_cell(logo_table.rows[0].cells[0], branding_info.get('customer_logo_bytes'), 1.4, "[Customer Logo]")
-    insert_logo_to_cell(logo_table.rows[0].cells[1], branding_info.get('oneture_logo_bytes'), 2.2, "ONETURE")
-    insert_logo_to_cell(logo_table.rows[0].cells[2], branding_info.get('aws_adv_logo_bytes'), 1.3, "AWS Advanced")
+    brand_p = doc.add_paragraph()
+    brand_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = brand_p.add_run("Prepared by ONETURE | AWS Partner")
+    run.bold = True
+    run.font.size = Pt(12)
 
     doc.add_paragraph("\n" * 4)
     
@@ -324,16 +303,8 @@ with st.sidebar:
 st.title("🚀 GenAI Scope of Work Architect")
 
 # --- STEP 0: COVER PAGE BRANDING ---
-st.header("📸 Cover Page Branding")
-brand_col1, brand_col2 = st.columns(2)
-with brand_col1:
-    aws_pn_logo = st.file_uploader("Top Left: AWS Partner Network Logo", type=['png', 'jpg', 'jpeg'], key="aws_pn")
-    customer_logo = st.file_uploader("Slot 1: Customer Logo", type=['png', 'jpg', 'jpeg'], key="cust_logo")
-
-with brand_col2:
-    oneture_logo = st.file_uploader("Slot 2: Oneture Logo", type=['png', 'jpg', 'jpeg'], key="one_logo")
-    aws_adv_logo = st.file_uploader("Slot 3: AWS Advanced Logo", type=['png', 'jpg', 'jpeg'], key="aws_adv")
-    doc_date = st.date_input("Document Date", date.today())
+st.header("📄 Cover Page")
+doc_date = st.date_input("Document Date", date.today())
 
 st.divider()
 
@@ -487,15 +458,12 @@ if st.session_state.generated_sow:
     st.write("")
     
     if st.button("💾 Prepare Microsoft Word Document"):
+
         branding_info = {
-            'sow_name': selected_sow_name,
-            'aws_pn_logo_bytes': aws_pn_logo.getvalue() if aws_pn_logo else None,
-            'customer_logo_bytes': customer_logo.getvalue() if customer_logo else None,
-            'oneture_logo_bytes': oneture_logo.getvalue() if oneture_logo else None,
-            'aws_adv_logo_bytes': aws_adv_logo.getvalue() if aws_adv_logo else None,
-            'doc_date_str': doc_date.strftime("%d %B %Y")
+                'sow_name': selected_sow_name,
+                'doc_date_str': doc_date.strftime("%d %B %Y")
         }
-        
+
         docx_data = create_docx_logic(st.session_state.generated_sow, branding_info, selected_sow_name)
         
         st.download_button(
