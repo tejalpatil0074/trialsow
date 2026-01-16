@@ -7,6 +7,13 @@ import os
 # --- FILE PATHING & DIAGRAM MAPPING ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+ASSETS_DIR = os.path.join(BASE_DIR, "diagrams")
+
+AWS_PN_LOGO = os.path.join(ASSETS_DIR, "aws partner logo.jpg")
+ONETURE_LOGO = os.path.join(ASSETS_DIR, "oneture logo1.jpg")
+AWS_ADV_LOGO = os.path.join(ASSETS_DIR, "aws advanced logo1.jpg")
+
+
 SOW_DIAGRAM_MAP = {
     "L1 Support Bot POC SOW":
         os.path.join(BASE_DIR, "diagrams", "L1 Support Bot POC SOW.png"),
@@ -90,36 +97,67 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     doc = Document()
     
     # --- PAGE 1: COVER PAGE ---
-   
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+    from docx.shared import Inches, Pt
+
+    # Top-left: AWS Partner Network (fixed)
+    p_top = doc.add_paragraph()
+    p_top.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    doc.add_picture(AWS_PN_LOGO, width=Inches(1.6))
+
     doc.add_paragraph("\n" * 3)
-    
+
+    # Title
     title_p = doc.add_paragraph()
     title_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     run = title_p.add_run(branding_info['sow_name'])
     run.font.size = Pt(26)
-    run.font.bold = True
-    
+    run.bold = True
+
     subtitle_p = doc.add_paragraph()
     subtitle_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = subtitle_p.add_run("Scope of Work Document")
-    run.font.size = Pt(14)
-    run.font.color.rgb = RGBColor(0x64, 0x74, 0x8B)
-    
-    doc.add_paragraph("\n" * 4)
-    
-    brand_p = doc.add_paragraph()
-    brand_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = brand_p.add_run("Prepared by ONETURE | AWS Partner")
-    run.bold = True
-    run.font.size = Pt(12)
+    subtitle_p.add_run("Scope of Work Document").font.size = Pt(14)
 
     doc.add_paragraph("\n" * 4)
-    
-    date_p = doc.add_paragraph()
-    date_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = date_p.add_run(branding_info['doc_date_str'])
-    run.font.size = Pt(12)
-    run.font.bold = True
+
+    # Logos row
+    logo_table = doc.add_table(rows=1, cols=3)
+    logo_table.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    # Customer logo (user uploaded)
+    cell = logo_table.rows[0].cells[0]
+    cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+        if branding_info.get("customer_logo_bytes"):
+             cell.paragraphs[0].add_run().add_picture(
+             io.BytesIO(branding_info["customer_logo_bytes"]),
+             width=Inches(1.8)
+        )
+        else:
+            cell.paragraphs[0].add_run("Customer Logo").bold = True
+
+# Oneture logo (fixed)
+cell = logo_table.rows[0].cells[1]
+cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+cell.paragraphs[0].add_run().add_picture(
+    ONETURE_LOGO, width=Inches(2.2)
+)
+
+# AWS Advanced Tier logo (fixed)
+cell = logo_table.rows[0].cells[2]
+cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+cell.paragraphs[0].add_run().add_picture(
+    AWS_ADV_LOGO, width=Inches(1.8)
+)
+
+doc.add_paragraph("\n" * 3)
+
+# Date
+date_p = doc.add_paragraph()
+date_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+date_p.add_run(branding_info["doc_date_str"]).bold = True
+
+doc.add_page_break()
+
     
     doc.add_page_break()
     
@@ -303,8 +341,15 @@ with st.sidebar:
 st.title("🚀 GenAI Scope of Work Architect")
 
 # --- STEP 0: COVER PAGE BRANDING ---
-st.header("📄 Cover Page")
+st.header("📸 Cover Page Branding")
+
+customer_logo = st.file_uploader(
+    "Upload Customer Logo (Optional)",
+    type=["png", "jpg", "jpeg"]
+)
+
 doc_date = st.date_input("Document Date", date.today())
+
 
 st.divider()
 
@@ -460,9 +505,11 @@ if st.session_state.generated_sow:
     if st.button("💾 Prepare Microsoft Word Document"):
 
         branding_info = {
-                'sow_name': selected_sow_name,
-                'doc_date_str': doc_date.strftime("%d %B %Y")
-        }
+             "sow_name": selected_sow_name,
+             "customer_logo_bytes": customer_logo.getvalue() if customer_logo else None,
+             "doc_date_str": doc_date.strftime("%d %B %Y")
+         }
+
 
         docx_data = create_docx_logic(st.session_state.generated_sow, branding_info, selected_sow_name)
         
