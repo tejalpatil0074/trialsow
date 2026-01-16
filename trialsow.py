@@ -126,17 +126,18 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     logo_table = doc.add_table(rows=1, cols=3)
     logo_table.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-    # Customer logo (user uploaded)
-   cell = logo_table.rows[0].cells[0]
-cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+        # Customer logo (user uploaded)
+    cell = logo_table.rows[0].cells[0]
+    cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-if branding_info.get("customer_logo_bytes"):
-    cell.paragraphs[0].add_run().add_picture(
-        io.BytesIO(branding_info["customer_logo_bytes"]),
-        width=Inches(1.8)
-    )
-else:
-    cell.paragraphs[0].add_run("Customer Logo").bold = True
+    if branding_info.get("customer_logo_bytes"):
+        cell.paragraphs[0].add_run().add_picture(
+            io.BytesIO(branding_info["customer_logo_bytes"]),
+            width=Inches(1.8)
+        )
+    else:
+        cell.paragraphs[0].add_run("Customer Logo").bold = True
+
 
     # Oneture logo (fixed)
     cell = logo_table.rows[0].cells[1]
