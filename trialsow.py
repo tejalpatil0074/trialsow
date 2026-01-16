@@ -491,13 +491,13 @@ if st.session_state.generated_sow:
         header_pattern = r'(?i)(^#*\s*4\s+SOLUTION ARCHITECTURE.*)'
         match = re.search(header_pattern, st.session_state.generated_sow, re.MULTILINE)
         
-        if match:
-    start, end = match.span()
-    st.markdown(st.session_state.generated_sow)
+    if match:
+        start, end = match.span()
+        st.markdown(st.session_state.generated_sow)
 
         st.markdown('</div>', unsafe_allow_html=True)
     
-    st.write("")
+        st.write("")
     
     if st.button("💾 Prepare Microsoft Word Document"):
 
