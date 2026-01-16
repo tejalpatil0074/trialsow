@@ -4,7 +4,7 @@ import io
 import re
 import os
 
-    # --- FILE PATHING & DIAGRAM MAPPING ---
+# --- FILE PATHING & DIAGRAM MAPPING ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 ASSETS_DIR = os.path.join(BASE_DIR, "diagrams")
@@ -13,9 +13,7 @@ AWS_PN_LOGO = os.path.join(ASSETS_DIR, "aws partner logo.jpg")
 ONETURE_LOGO = os.path.join(ASSETS_DIR, "oneture logo1.jpg")
 AWS_ADV_LOGO = os.path.join(ASSETS_DIR, "aws advanced logo1.jpg")
 
-
-
-  SOW_DIAGRAM_MAP = {
+SOW_DIAGRAM_MAP = {
     "L1 Support Bot POC SOW":
         os.path.join(BASE_DIR, "diagrams", "L1 Support Bot POC SOW.png"),
 
@@ -43,6 +41,7 @@ AWS_ADV_LOGO = os.path.join(ASSETS_DIR, "aws advanced logo1.jpg")
     "PoC Scope Document":
         os.path.join(BASE_DIR, "diagrams", "PoC Scope Document.png")
 }
+
 
 
 # --- CONFIGURATION ---
