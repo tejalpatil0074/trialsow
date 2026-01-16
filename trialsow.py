@@ -250,13 +250,14 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
             i += 1
             continue
 
-       # Trigger for Section 6: Insert Cost Table
-       if "6 RESOURCES & COST ESTIMATES" in upper_text and (line.startswith('#') or line.startswith('6')):
-          doc.add_heading(clean_text, level=1)
-          add_infra_cost_table(doc, sow_type_name)
-          doc.add_paragraph("")
-      i += 1
-      continue
+        # Trigger for Section 6: Insert Cost Table
+        if "6 RESOURCES & COST ESTIMATES" in upper_text and (line.startswith('#') or line.startswith('6')):
+            doc.add_heading(clean_text, level=1)
+            add_infra_cost_table(doc, sow_type_name)
+            doc.add_paragraph("")
+          
+            i += 1
+            continue
 
 
         if ("2 PROJECT OVERVIEW" in upper_text) and (line.startswith('#') or line.startswith('2')) and not overview_started:
