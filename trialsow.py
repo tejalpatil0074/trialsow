@@ -7,6 +7,23 @@ import os
 # --- FILE PATHING & DIAGRAM MAPPING ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+ASSETS_DIR = os.path.join(BASE_DIR, "diagrams")
+
+AWS_PN_LOGO = os.path.join(ASSETS_DIR, "aws partner logo.jpg")
+ONETURE_LOGO = os.path.join(ASSETS_DIR, "oneture logo1.jpg")
+AWS_ADV_LOGO = os.path.join(ASSETS_DIR, "aws advanced logo1.jpg")
+
+SOW_COST_TABLE_MAP = { "L1 Support Bot POC SOW": { "poc_cost": "3,536.40 USD", }, 
+                      "Beauty Advisor POC SOW": { "poc_cost": "4,525.66 USD + 200 USD (Amazon Bedrock Cost) = 4,725.66", "prod_cost": "4,525.66 USD + 1,175.82 USD (Amazon Bedrock Cost) = 5,701.48" }, 
+                      "Ready Search POC Scope of Work Document":{ "poc_cost": "2,641.40 USD" }, 
+                      "AI based Image Enhancement POC SOW": { "poc_cost": "2,814.34 USD" }, 
+                      "AI based Image Inspection POC SOW": { "poc_cost": "3,536.40 USD" }, 
+                      "Gen AI for SOP POC SOW": { "poc_cost": "2,110.30 USD" }, 
+                      "Project Scope Document": { "prod_cost": "2,993.60 USD" }, 
+                      "Gen AI Speech To Speech": { "prod_cost": "2,124.23 USD" }, 
+                      "PoC Scope Document": { "amazon_bedrock": "1,000 USD", "total": "$ 3,150" }, 
+                     }
+
 SOW_DIAGRAM_MAP = {
     "L1 Support Bot POC SOW":
         os.path.join(BASE_DIR, "diagrams", "L1 Support Bot POC SOW.png"),
@@ -78,6 +95,53 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
+# WORD – COST TABLE
+# =====================================================
+def add_infra_cost_table(doc, sow_type_name):
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+
+    cost_data = SOW_COST_TABLE_MAP.get(sow_type_name)
+    if not cost_data:
+        return
+
+    table = doc.add_table(rows=1, cols=3)
+    table.style = "Table Grid"
+    hdr = table.rows[0].cells
+    hdr[0].text = "System"
+    hdr[1].text = "Infra Cost"
+    hdr[2].text = "AWS Cost Calculator"
+
+    aws_link = "https://calculator.aws/#/"
+
+    if "poc_cost" in cost_data:
+        r = table.add_row().cells
+        r[0].text = "POC"
+        r[1].text = cost_data["poc_cost"]
+        r[2].text = aws_link
+
+    if "prod_cost" in cost_data:
+        r = table.add_row().cells
+        r[0].text = "Production"
+        r[1].text = cost_data["prod_cost"]
+        r[2].text = aws_link
+
+    if "amazon_bedrock" in cost_data:
+        r = table.add_row().cells
+        r[0].text = "Amazon Bedrock"
+        r[1].text = cost_data["amazon_bedrock"]
+        r[2].text = aws_link
+
+    if "total" in cost_data:
+        r = table.add_row().cells
+        r[0].text = "Total"
+        r[1].text = cost_data["total"]
+        r[2].text = aws_link
+
+    for row in table.rows:
+        for cell in row.cells:
+            for p in cell.paragraphs:
+                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
 # --- CACHED UTILITIES ---
 def create_docx_logic(text_content, branding_info, sow_type_name):
     """
@@ -88,51 +152,67 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     from docx.enum.text import WD_ALIGN_PARAGRAPH
 
     doc = Document()
-    
-    # --- PAGE 1: COVER PAGE ---
-    if branding_info.get('aws_pn_logo_bytes'):
-        p_top = doc.add_paragraph()
-        p_top.alignment = WD_ALIGN_PARAGRAPH.LEFT
-        try:
-            run = p_top.add_run()
-            run.add_picture(io.BytesIO(branding_info['aws_pn_logo_bytes']), width=Inches(1.0))
-        except:
-            p_top.add_run("aws partner network").bold = True
+
+    # Top-left: AWS Partner Network
+    p_top = doc.add_paragraph()
+    p_top.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    doc.add_picture(AWS_PN_LOGO, width=Inches(1.6))
 
     doc.add_paragraph("\n" * 3)
-    
+
+    # Title
     title_p = doc.add_paragraph()
     title_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     run = title_p.add_run(branding_info['sow_name'])
     run.font.size = Pt(26)
-    run.font.bold = True
-    
+    run.bold = True
+
     subtitle_p = doc.add_paragraph()
     subtitle_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = subtitle_p.add_run("Scope of Work Document")
-    run.font.size = Pt(14)
-    run.font.color.rgb = RGBColor(0x64, 0x74, 0x8B)
-    
+    subtitle_p.add_run("Scope of Work Document").font.size = Pt(14)
+
     doc.add_paragraph("\n" * 4)
-    
+
+    # --- LOGO ROW ---
     logo_table = doc.add_table(rows=1, cols=3)
     logo_table.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    
-    def insert_logo_to_cell(cell, bytes_data, width_val, fallback_text):
-        cell.paragraphs[0].text = ""
-        p = cell.paragraphs[0]
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        if bytes_data:
-            try:
-                p.add_run().add_picture(io.BytesIO(bytes_data), width=Inches(width_val))
-            except:
-                p.add_run(fallback_text).bold = True
-        else:
-            p.add_run(fallback_text).bold = True
 
-    insert_logo_to_cell(logo_table.rows[0].cells[0], branding_info.get('customer_logo_bytes'), 1.4, "[Customer Logo]")
-    insert_logo_to_cell(logo_table.rows[0].cells[1], branding_info.get('oneture_logo_bytes'), 2.2, "ONETURE")
-    insert_logo_to_cell(logo_table.rows[0].cells[2], branding_info.get('aws_adv_logo_bytes'), 1.3, "AWS Advanced")
+    # Customer Logo (user uploaded)
+    cell = logo_table.rows[0].cells[0]
+    cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+    if branding_info.get("customer_logo_bytes"):
+        cell.paragraphs[0].add_run().add_picture(
+        io.BytesIO(branding_info["customer_logo_bytes"]),
+        width=Inches(1.8)
+    )
+    else:
+        cell.paragraphs[0].add_run("Customer Logo").bold = True
+
+    # Oneture Logo (fixed)
+    cell = logo_table.rows[0].cells[1]
+    cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+    cell.paragraphs[0].add_run().add_picture(
+    ONETURE_LOGO, width=Inches(2.2)
+    )
+
+    # AWS Advanced Tier (fixed)
+    cell = logo_table.rows[0].cells[2]
+    cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+    cell.paragraphs[0].add_run().add_picture(
+    AWS_ADV_LOGO, width=Inches(1.8)
+    )
+
+    doc.add_paragraph("\n" * 3)
+
+    # Date
+    date_p = doc.add_paragraph()
+    date_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    date_p.add_run(branding_info["doc_date_str"]).bold = True
+
+    doc.add_page_break()
+
+    
+
 
     doc.add_paragraph("\n" * 4)
     
@@ -325,15 +405,13 @@ st.title("🚀 GenAI Scope of Work Architect")
 
 # --- STEP 0: COVER PAGE BRANDING ---
 st.header("📸 Cover Page Branding")
-brand_col1, brand_col2 = st.columns(2)
-with brand_col1:
-    aws_pn_logo = st.file_uploader("Top Left: AWS Partner Network Logo", type=['png', 'jpg', 'jpeg'], key="aws_pn")
-    customer_logo = st.file_uploader("Slot 1: Customer Logo", type=['png', 'jpg', 'jpeg'], key="cust_logo")
 
-with brand_col2:
-    oneture_logo = st.file_uploader("Slot 2: Oneture Logo", type=['png', 'jpg', 'jpeg'], key="one_logo")
-    aws_adv_logo = st.file_uploader("Slot 3: AWS Advanced Logo", type=['png', 'jpg', 'jpeg'], key="aws_adv")
-    doc_date = st.date_input("Document Date", date.today())
+customer_logo = st.file_uploader(
+    "Upload Customer Logo (Optional)",
+    type=["png", "jpg", "jpeg"]
+)
+
+doc_date = st.date_input("Document Date", date.today())
 
 st.divider()
 
@@ -488,13 +566,11 @@ if st.session_state.generated_sow:
     
     if st.button("💾 Prepare Microsoft Word Document"):
         branding_info = {
-            'sow_name': selected_sow_name,
-            'aws_pn_logo_bytes': aws_pn_logo.getvalue() if aws_pn_logo else None,
-            'customer_logo_bytes': customer_logo.getvalue() if customer_logo else None,
-            'oneture_logo_bytes': oneture_logo.getvalue() if oneture_logo else None,
-            'aws_adv_logo_bytes': aws_adv_logo.getvalue() if aws_adv_logo else None,
-            'doc_date_str': doc_date.strftime("%d %B %Y")
-        }
+        "sow_name": selected_sow_name,
+        "customer_logo_bytes": customer_logo.getvalue() if customer_logo else None,
+        "doc_date_str": doc_date.strftime("%d %B %Y")
+    }
+
         
         docx_data = create_docx_logic(st.session_state.generated_sow, branding_info, selected_sow_name)
         
