@@ -270,7 +270,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                     p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
                 except:
                     doc.add_paragraph("[Architecture Diagram - Missing or Incompatible Format]")
-                    add_infra_cost_table(doc, sow_type_name)
+                    
 
                 doc.add_paragraph("")
             i += 1
@@ -345,6 +345,14 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                 if p.runs:
                     p.runs[0].bold = True
         i += 1
+        # --- SECTION 6: RESOURCES & COST ESTIMATES ---
+            if "6 RESOURCES & COST ESTIMATES" in upper_text and (line.startswith('#') or line.startswith('6')):
+                doc.add_heading(clean_text, level=1)
+                add_infra_cost_table(doc, sow_type_name)   # ✅ THIS IS THE KEY LINE
+                
+                i += 1
+                continue
+
             
     bio = io.BytesIO()
     doc.save(bio)
@@ -412,6 +420,24 @@ with st.sidebar:
     
     if st.button("🗑️ Reset All Fields", on_click=clear_sow, use_container_width=True):
         st.rerun()
+
+    # --- COST TABLE PREVIEW ---
+    st.divider()
+    st.header("💰 Cost Table")
+
+    cost_data = SOW_COST_TABLE_MAP.get(selected_sow_name)
+
+    if cost_data:
+        import pandas as pd
+        df = pd.DataFrame(
+            [{"System": k, "Cost": v, "AWS Calculator": "https://calculator.aws/#/"} 
+             for k, v in cost_data.items()]
+    )
+        st.table(df)
+    else:
+        st.info("No cost table available for this SOW.")
+
+
 
 # --- MAIN UI ---
 st.title("🚀 GenAI Scope of Work Architect")
