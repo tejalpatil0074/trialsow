@@ -198,7 +198,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
         "6  Commercials"
     ]
     # ---- SECTION 4: ARCH DIAGRAM ----
-   if upper.startswith("4 SOLUTION ARCHITECTURE"):
+  if upper.startswith("4 SOLUTION ARCHITECTURE"):
     doc.add_heading(clean, 1)
 
     diagram = SOW_DIAGRAM_MAP.get(sow_type_name)
