@@ -42,6 +42,49 @@ SOW_DIAGRAM_MAP = {
         os.path.join(BASE_DIR, "diagrams", "PoC Scope Document.png")
 }
 
+SOW_COST_TABLE_MAP = {
+
+    "L1 Support Bot POC SOW": {
+        "poc_cost": "3,536.40 USD",
+    },
+
+    "Beauty Advisor POC SOW": {
+        "poc_cost": "4,525.66 USD + 200 USD (Amazon Bedrock Cost) = 4,725.66",
+        "prod_cost": "4,525.66 USD + 1,175.82 USD (Amazon Bedrock Cost) = 5,701.48"
+    },
+
+    "Ready Search POC Scope of Work Document":{
+        "poc_cost": "2,641.40 USD"
+    },
+
+    "AI based Image Enhancement POC SOW": {
+         "poc_cost": "2,814.34 USD"
+    },
+
+    "AI based Image Inspection POC SOW": {
+        "poc_cost": "3,536.40 USD"
+    },
+
+    "Gen AI for SOP POC SOW": {
+        "poc_cost": "2,110.30 USD"
+    },
+
+    "Project Scope Document": {
+        "prod_cost": "2,993.60 USD"
+    },
+
+    "Gen AI Speech To Speech": {
+        "prod_cost": "2,124.23 USD"
+    },
+
+    "PoC Scope Document": {
+        "amazon_bedrock": "1,000 USD",
+        "total": "$ 3,150"
+    },
+
+}
+
+
 
 
 # --- CONFIGURATION ---
@@ -85,6 +128,41 @@ st.markdown("""
     }
     </style>
     """, unsafe_allow_html=True)
+
+# >>> ADDED: Infra Cost Table Generator <<<
+def add_infra_cost_table(doc, sow_type_name):
+    from docx.shared import Inches
+
+    aws_link = "https://calculator.aws/#/"
+
+    cost_data = SOW_COST_TABLE_MAP.get(sow_type_name)
+    if not cost_data:
+        return
+
+    doc.add_paragraph("")  # spacing
+
+    table = doc.add_table(rows=1, cols=3)
+    table.style = "Table Grid"
+
+    hdr = table.rows[0].cells
+    hdr[0].text = "System"
+    hdr[1].text = "Infra Cost"
+    hdr[2].text = "AWS Cost Calculator Link"
+
+    if "poc_cost" in cost_data:
+        row = table.add_row().cells
+        row[0].text = "POC"
+        row[1].text = cost_data["poc_cost"]
+        row[2].text = aws_link
+
+    if "prod_cost" in cost_data:
+        row = table.add_row().cells
+        row[0].text = "Production"
+        row[1].text = cost_data["prod_cost"]
+        row[2].text = aws_link
+
+    doc.add_paragraph("")  # spacing
+
 
 # --- CACHED UTILITIES ---
 def create_docx_logic(text_content, branding_info, sow_type_name):
@@ -198,9 +276,16 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                     p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
                 except:
                     doc.add_paragraph("[Architecture Diagram - Missing or Incompatible Format]")
+
+                # >>> ADDED HERE <<<
+                add_infra_cost_table(doc, sow_type_name)
+
                 doc.add_paragraph("")
+
             i += 1
             continue
+
+
 
         if ("2 PROJECT OVERVIEW" in upper_text) and (line.startswith('#') or line.startswith('2')) and not overview_started:
             doc.add_page_break()
