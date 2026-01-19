@@ -4,99 +4,138 @@ import io
 import re
 import os
 
+# ===================== NEW IMPORTS (REQUIRED) =====================
+from PIL import Image
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
+from docx.opc.constants import RELATIONSHIP_TYPE as RT
+# =================================================================
+
 # --- FILE PATHING & DIAGRAM MAPPING ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
 ASSETS_DIR = os.path.join(BASE_DIR, "diagrams")
 
 AWS_PN_LOGO = os.path.join(ASSETS_DIR, "aws partner logo.jpg")
 ONETURE_LOGO = os.path.join(ASSETS_DIR, "oneture logo1.jpg")
 AWS_ADV_LOGO = os.path.join(ASSETS_DIR, "aws advanced logo1.jpg")
 
-SOW_COST_TABLE_MAP = { "L1 Support Bot POC SOW": { "poc_cost": "3,536.40 USD", }, 
-                      "Beauty Advisor POC SOW": { "poc_cost": "4,525.66 USD + 200 USD (Amazon Bedrock Cost) = 4,725.66", "prod_cost": "4,525.66 USD + 1,175.82 USD (Amazon Bedrock Cost) = 5,701.48" }, 
-                      "Ready Search POC Scope of Work Document":{ "poc_cost": "2,641.40 USD" }, 
-                      "AI based Image Enhancement POC SOW": { "poc_cost": "2,814.34 USD" }, 
-                      "AI based Image Inspection POC SOW": { "poc_cost": "3,536.40 USD" }, 
-                      "Gen AI for SOP POC SOW": { "poc_cost": "2,110.30 USD" }, 
-                      "Project Scope Document": { "prod_cost": "2,993.60 USD" }, 
-                      "Gen AI Speech To Speech": { "prod_cost": "2,124.23 USD" }, 
-                      "PoC Scope Document": { "amazon_bedrock": "1,000 USD", "total": "$ 3,150" }, 
-                     }
+# ===================== UPDATED COST MAP (WITH LINKS) =====================
+SOW_COST_TABLE_MAP = {
+    "L1 Support Bot POC SOW": {
+        "poc_cost": {
+            "value": "3,536.40 USD",
+            "link": "https://calculator.aws/#/"
+        }
+    },
+    "Beauty Advisor POC SOW": {
+        "poc_cost": {
+            "value": "4,525.66 USD + 200 USD (Amazon Bedrock Cost) = 4,725.66",
+            "link": "https://calculator.aws/#/"
+        },
+        "prod_cost": {
+            "value": "4,525.66 USD + 1,175.82 USD (Amazon Bedrock Cost) = 5,701.48",
+            "link": "https://calculator.aws/#/"
+        }
+    },
+    "Ready Search POC Scope of Work Document": {
+        "poc_cost": {
+            "value": "2,641.40 USD",
+            "link": "https://calculator.aws/#/"
+        }
+    },
+    "AI based Image Enhancement POC SOW": {
+        "poc_cost": {
+            "value": "2,814.34 USD",
+            "link": "https://calculator.aws/#/"
+        }
+    },
+    "AI based Image Inspection POC SOW": {
+        "poc_cost": {
+            "value": "3,536.40 USD",
+            "link": "https://calculator.aws/#/"
+        }
+    },
+    "Gen AI for SOP POC SOW": {
+        "poc_cost": {
+            "value": "2,110.30 USD",
+            "link": "https://calculator.aws/#/"
+        }
+    },
+    "Project Scope Document": {
+        "prod_cost": {
+            "value": "2,993.60 USD",
+            "link": "https://calculator.aws/#/"
+        }
+    },
+    "Gen AI Speech To Speech": {
+        "prod_cost": {
+            "value": "2,124.23 USD",
+            "link": "https://calculator.aws/#/"
+        }
+    },
+    "PoC Scope Document": {
+        "amazon_bedrock": {
+            "value": "1,000 USD",
+            "link": "https://calculator.aws/#/"
+        },
+        "total": {
+            "value": "$ 3,150",
+            "link": "https://calculator.aws/#/"
+        }
+    }
+}
+# =======================================================================
 
 SOW_DIAGRAM_MAP = {
-    "L1 Support Bot POC SOW":
-        os.path.join(BASE_DIR, "diagrams", "L1 Support Bot POC SOW.png"),
-
-    "Ready Search POC Scope of Work Document":
-        os.path.join(BASE_DIR, "diagrams", "Ready Search POC Scope of Work Document.png"),
-
-    "AI based Image Enhancement POC SOW":
-        os.path.join(BASE_DIR, "diagrams", "AI based Image Enhancement POC SOW.png"),
-
-    "Beauty Advisor POC SOW":
-        os.path.join(BASE_DIR, "diagrams", "Beauty Advisor POC SOW.png"),
-
-    "AI based Image Inspection POC SOW":
-        os.path.join(BASE_DIR, "diagrams", "AI based Image Inspection POC SOW.png"),
-
-    "Gen AI for SOP POC SOW":
-        os.path.join(BASE_DIR, "diagrams", "Gen AI for SOP POC SOW.png"),
-
-    "Project Scope Document":
-        os.path.join(BASE_DIR, "diagrams", "Project Scope Document.png"),
-
-    "Gen AI Speech To Speech":
-        os.path.join(BASE_DIR, "diagrams", "Gen AI Speech To Speech.png"),
-
-    "PoC Scope Document":
-        os.path.join(BASE_DIR, "diagrams", "PoC Scope Document.png")
+    "L1 Support Bot POC SOW": os.path.join(ASSETS_DIR, "L1 Support Bot POC SOW.png"),
+    "Ready Search POC Scope of Work Document": os.path.join(ASSETS_DIR, "Ready Search POC Scope of Work Document.png"),
+    "AI based Image Enhancement POC SOW": os.path.join(ASSETS_DIR, "AI based Image Enhancement POC SOW.png"),
+    "Beauty Advisor POC SOW": os.path.join(ASSETS_DIR, "Beauty Advisor POC SOW.png"),
+    "AI based Image Inspection POC SOW": os.path.join(ASSETS_DIR, "AI based Image Inspection POC SOW.png"),
+    "Gen AI for SOP POC SOW": os.path.join(ASSETS_DIR, "Gen AI for SOP POC SOW.png"),
+    "Project Scope Document": os.path.join(ASSETS_DIR, "Project Scope Document.png"),
+    "Gen AI Speech To Speech": os.path.join(ASSETS_DIR, "Gen AI Speech To Speech.png"),
+    "PoC Scope Document": os.path.join(ASSETS_DIR, "PoC Scope Document.png"),
 }
 
-# --- CONFIGURATION ---
-st.set_page_config(
-    page_title="GenAI SOW Architect", 
-    layout="wide", 
-    page_icon="📄",
-    initial_sidebar_state="expanded"
-)
+# ===================== HELPER FUNCTIONS (NEW) =====================
+def is_valid_image(path):
+    try:
+        with Image.open(path) as img:
+            img.verify()
+        return True
+    except Exception:
+        return False
 
-# Custom CSS for an Enterprise UI
-st.markdown("""
-    <style>
-    .main { background-color: #f8fafc; }
-    .stButton>button { border-radius: 8px; font-weight: 600; }
-    .stTextArea textarea { border-radius: 10px; }
-    .stTextInput input { border-radius: 8px; }
-    .block-container { padding-top: 1.5rem; }
-    .sow-preview {
-        background-color: white;
-        padding: 40px;
-        border-radius: 12px;
-        border: 1px solid #e2e8f0;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        line-height: 1.7;
-        color: #1e293b;
-        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    }
-    h1, h2, h3 { color: #0f172a; }
-    .stTabs [data-baseweb="tab-list"] { gap: 24px; }
-    .stTabs [data-baseweb="tab"] { height: 50px; white-space: pre-wrap; font-weight: 600; }
-    [data-testid="stExpander"] { border: none; box-shadow: none; background: transparent; }
-    .stakeholder-header { 
-        background-color: #f1f5f9; 
-        padding: 8px 12px; 
-        border-radius: 6px; 
-        margin-bottom: 10px; 
-        font-weight: bold;
-        color: #334155;
-        border-left: 4px solid #3b82f6;
-    }
-    </style>
-    """, unsafe_allow_html=True)
 
-# WORD – COST TABLE
-# =====================================================
+def add_hyperlink(paragraph, text, url):
+    part = paragraph.part
+    r_id = part.relate_to(url, RT.HYPERLINK, is_external=True)
+
+    hyperlink = OxmlElement("w:hyperlink")
+    hyperlink.set(qn("r:id"), r_id)
+
+    run = OxmlElement("w:r")
+    rPr = OxmlElement("w:rPr")
+
+    color = OxmlElement("w:color")
+    color.set(qn("w:val"), "0000FF")
+    rPr.append(color)
+
+    underline = OxmlElement("w:u")
+    underline.set(qn("w:val"), "single")
+    rPr.append(underline)
+
+    run.append(rPr)
+    text_elem = OxmlElement("w:t")
+    text_elem.text = text
+    run.append(text_elem)
+
+    hyperlink.append(run)
+    paragraph._p.append(hyperlink)
+# =================================================================
+
+# ===================== WORD – COST TABLE =====================
 def add_infra_cost_table(doc, sow_type_name):
     from docx.enum.text import WD_ALIGN_PARAGRAPH
 
@@ -106,259 +145,113 @@ def add_infra_cost_table(doc, sow_type_name):
 
     table = doc.add_table(rows=1, cols=3)
     table.style = "Table Grid"
+
     hdr = table.rows[0].cells
     hdr[0].text = "System"
     hdr[1].text = "Infra Cost"
     hdr[2].text = "AWS Cost Calculator"
 
-    aws_link = "https://calculator.aws/#/"
+    def add_row(system, info):
+        r = table.add_row().cells
+        r[0].text = system
+        r[1].text = info["value"]
+        p = r[2].paragraphs[0]
+        p.clear()
+        add_hyperlink(p, "View AWS Cost Calculator", info["link"])
 
     if "poc_cost" in cost_data:
-        r = table.add_row().cells
-        r[0].text = "POC"
-        r[1].text = cost_data["poc_cost"]
-        r[2].text = aws_link
-
+        add_row("POC", cost_data["poc_cost"])
     if "prod_cost" in cost_data:
-        r = table.add_row().cells
-        r[0].text = "Production"
-        r[1].text = cost_data["prod_cost"]
-        r[2].text = aws_link
-
+        add_row("Production", cost_data["prod_cost"])
     if "amazon_bedrock" in cost_data:
-        r = table.add_row().cells
-        r[0].text = "Amazon Bedrock"
-        r[1].text = cost_data["amazon_bedrock"]
-        r[2].text = aws_link
-
+        add_row("Amazon Bedrock", cost_data["amazon_bedrock"])
     if "total" in cost_data:
-        r = table.add_row().cells
-        r[0].text = "Total"
-        r[1].text = cost_data["total"]
-        r[2].text = aws_link
+        add_row("Total", cost_data["total"])
 
     for row in table.rows:
         for cell in row.cells:
             for p in cell.paragraphs:
                 p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+# ============================================================
 
-# --- CACHED UTILITIES ---
+# ===================== DOCX GENERATION =====================
 def create_docx_logic(text_content, branding_info, sow_type_name):
-    """
-    Generates the Word document with strict page isolation and markdown cleanup.
-    """
     from docx import Document
-    from docx.shared import Inches, Pt, RGBColor
+    from docx.shared import Inches, Pt
     from docx.enum.text import WD_ALIGN_PARAGRAPH
 
     doc = Document()
-    # --- One-time render guards ---
+
+    # ONE-TIME FLAGS (CRITICAL)
     architecture_rendered = False
     cost_table_rendered = False
 
-
-    # Top-left: AWS Partner Network
-    p_top = doc.add_paragraph()
-    p_top.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    # --- HEADER LOGO ---
     doc.add_picture(AWS_PN_LOGO, width=Inches(1.6))
-
     doc.add_paragraph("\n" * 3)
 
-    # Title
-    title_p = doc.add_paragraph()
-    title_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = title_p.add_run(branding_info['sow_name'])
-    run.font.size = Pt(26)
-    run.bold = True
-
-    subtitle_p = doc.add_paragraph()
-    subtitle_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    subtitle_p.add_run("Scope of Work Document").font.size = Pt(14)
-
-    doc.add_paragraph("\n" * 4)
-
-    # --- LOGO ROW ---
-    logo_table = doc.add_table(rows=1, cols=3)
-    logo_table.alignment = WD_ALIGN_PARAGRAPH.CENTER
-
-    # Customer Logo (user uploaded)
-    cell = logo_table.rows[0].cells[0]
-    cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-    if branding_info.get("customer_logo_bytes"):
-        cell.paragraphs[0].add_run().add_picture(
-        io.BytesIO(branding_info["customer_logo_bytes"]),
-        width=Inches(1.8)
-    )
-    else:
-        cell.paragraphs[0].add_run("Customer Logo").bold = True
-
-    # Oneture Logo (fixed)
-    cell = logo_table.rows[0].cells[1]
-    cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-    cell.paragraphs[0].add_run().add_picture(
-    ONETURE_LOGO, width=Inches(2.2)
-    )
-
-    # AWS Advanced Tier (fixed)
-    cell = logo_table.rows[0].cells[2]
-    cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-    cell.paragraphs[0].add_run().add_picture(
-    AWS_ADV_LOGO, width=Inches(1.8)
-    )
-
-    doc.add_paragraph("\n" * 3)
-
-    # Date
-    date_p = doc.add_paragraph()
-    date_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    date_p.add_run(branding_info["doc_date_str"]).bold = True
+    title = doc.add_paragraph(branding_info["sow_name"])
+    title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    title.runs[0].bold = True
+    title.runs[0].font.size = Pt(26)
 
     doc.add_page_break()
 
-    # --- CONTENT PROCESSING ---
-    style = doc.styles['Normal']
-    style.font.name = 'Arial'
-    style.font.size = Pt(11)
-
-    lines = text_content.split('\n')
+    lines = text_content.split("\n")
     i = 0
     in_toc_section = False
-    toc_already_added = False
 
     while i < len(lines):
         line = lines[i].strip()
+        clean = re.sub(r"\*+|^#+", "", line).strip()
+        upper = clean.upper()
 
-        if not line:
-            doc.add_paragraph("")
-            i += 1
-            continue
-
-        line_clean = re.sub(r'\*+', '', line).strip()
-        clean_text = re.sub(r'^#+\s*', '', line_clean).strip()
-        upper_text = clean_text.upper()
-
-        # ---------------- TOC START ----------------
-        if "1 TABLE OF CONTENTS" in upper_text:
-            if not toc_already_added:
-                doc.add_heading("1 TABLE OF CONTENTS", level=1)
-                toc_already_added = True
-                in_toc_section = True
-            i += 1
-            continue
-
-        # ---------------- TOC END ----------------
-        if in_toc_section and "2 PROJECT OVERVIEW" in upper_text:
-            in_toc_section = False
-
-        # ---------------- SECTION 4 ----------------
+        # SECTION 4 (ARCH)
         if (
             not in_toc_section
             and not architecture_rendered
-            and "4 SOLUTION ARCHITECTURE" in upper_text
-            and (line.startswith('#') or line.startswith('4'))
+            and "4 SOLUTION ARCHITECTURE" in upper
         ):
             architecture_rendered = True
+            doc.add_heading(clean, level=1)
 
-            doc.add_heading(clean_text, level=1)
-
-            diagram_path = SOW_DIAGRAM_MAP.get(sow_type_name)
-            if diagram_path and os.path.exists(diagram_path):
-                doc.add_paragraph("")
-                doc.add_picture(diagram_path, width=Inches(6.0))
-                cap = doc.add_paragraph(f"{sow_type_name} – Architecture Diagram")
-                cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            diagram = SOW_DIAGRAM_MAP.get(sow_type_name)
+            if diagram and os.path.exists(diagram) and is_valid_image(diagram):
+                doc.add_picture(diagram, width=Inches(6))
+            else:
+                doc.add_paragraph("[Architecture Diagram – To be finalized]")
 
             i += 1
             continue
 
-
-
-        # ---------------- SECTION 6 ----------------
+        # SECTION 6 (COST)
         if (
             not in_toc_section
             and not cost_table_rendered
-            and "6 RESOURCES & COST ESTIMATES" in upper_text
-            and (line.startswith('#') or line.startswith('6'))
+            and "6 RESOURCES & COST ESTIMATES" in upper
         ):
             cost_table_rendered = True
-
-            doc.add_heading(clean_text, level=1)
+            doc.add_heading(clean, level=1)
             add_infra_cost_table(doc, sow_type_name)
-
             i += 1
             continue
 
-
-
-        # ---------------- TABLE PARSING ----------------
-        if line.startswith('|') and i + 1 < len(lines) and lines[i+1].strip().startswith('|'):
-            table_lines = []
-            while i < len(lines) and lines[i].strip().startswith('|'):
-                table_lines.append(lines[i])
-                i += 1
-
-            headers = [c.strip() for c in table_lines[0].split('|') if c.strip()]
-            table = doc.add_table(rows=1, cols=len(headers))
-            table.style = "Table Grid"
-
-            for idx, h in enumerate(headers):
-                table.rows[0].cells[idx].text = h
-
-            for row in table_lines[2:]:
-                row_cells = table.add_row().cells
-                cells = [c.strip() for c in row.split('|') if c.strip()]
-                for idx, c in enumerate(cells):
-                    row_cells[idx].text = c
-
-            continue
-
-        # ---------------- HEADINGS ----------------
-        if line.startswith('# '):
-            doc.add_heading(clean_text, level=1)
-
-        elif line.startswith('## '):
-            h = doc.add_heading(clean_text, level=2)
-            if in_toc_section:
-                h.paragraph_format.left_indent = Inches(0.4)
-
-        elif line.startswith('### '):
-            h = doc.add_heading(clean_text, level=3)
-            if in_toc_section:
-                h.paragraph_format.left_indent = Inches(0.8)
-
-        # ---------------- BULLETS ----------------
-        elif line.startswith('- ') or line.startswith('* '):
-            p = doc.add_paragraph(clean_text[2:], style="List Bullet")
-            if in_toc_section:
-                p.paragraph_format.left_indent = Inches(0.4)
-
-        # ---------------- NORMAL TEXT ----------------
-        else:
-            p = doc.add_paragraph(clean_text)
-
-            segregation_keywords = [
-                "PARTNER EXECUTIVE SPONSOR",
-                "CUSTOMER EXECUTIVE SPONSOR",
-                "AWS EXECUTIVE SPONSOR",
-                "PROJECT ESCALATION CONTACTS",
-                "ASSUMPTIONS",
-                "DEPENDENCIES"
-            ]
-
-            if any(k in upper_text for k in segregation_keywords):
-                if p.runs:
-                    p.runs[0].bold = True
-
+        doc.add_paragraph(clean)
         i += 1
 
-            
     bio = io.BytesIO()
     doc.save(bio)
     return bio.getvalue()
+# ============================================================
 
-# --- INITIALIZATION ---
-if 'generated_sow' not in st.session_state:
-    st.session_state.generated_sow = ""
+# ===================== STREAMLIT PREVIEW FIX =====================
+if "generated_sow" in st.session_state:
+    diagram = SOW_DIAGRAM_MAP.get(st.session_state.get("selected_sow_name"))
+    if diagram and os.path.exists(diagram) and is_valid_image(diagram):
+        st.image(diagram, use_container_width=True)
+# ============================================================
+
+
 
 if 'stakeholders' not in st.session_state:
     import pandas as pd
