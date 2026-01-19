@@ -110,7 +110,7 @@ st.markdown("""
 # =====================================================
 def add_infra_cost_table(doc, sow_type_name):
     if sow_type_name == "PoC Scope Document":
-    add_poc_calculation_table(doc)
+        add_poc_calculation_table(doc)
 
     from docx.enum.text import WD_ALIGN_PARAGRAPH
 
