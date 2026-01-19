@@ -13,16 +13,90 @@ AWS_PN_LOGO = os.path.join(ASSETS_DIR, "aws partner logo.jpg")
 ONETURE_LOGO = os.path.join(ASSETS_DIR, "oneture logo1.jpg")
 AWS_ADV_LOGO = os.path.join(ASSETS_DIR, "aws advanced logo1.jpg")
 
-SOW_COST_TABLE_MAP = { "L1 Support Bot POC SOW": { "poc_cost": "3,536.40 USD", }, 
-                      "Beauty Advisor POC SOW": { "poc_cost": "4,525.66 USD + 200 USD (Amazon Bedrock Cost) = 4,725.66", "prod_cost": "4,525.66 USD + 1,175.82 USD (Amazon Bedrock Cost) = 5,701.48" }, 
-                      "Ready Search POC Scope of Work Document":{ "poc_cost": "2,641.40 USD" }, 
-                      "AI based Image Enhancement POC SOW": { "poc_cost": "2,814.34 USD" }, 
-                      "AI based Image Inspection POC SOW": { "poc_cost": "3,536.40 USD" }, 
-                      "Gen AI for SOP POC SOW": { "poc_cost": "2,110.30 USD" }, 
-                      "Project Scope Document": { "prod_cost": "2,993.60 USD" }, 
-                      "Gen AI Speech To Speech": { "prod_cost": "2,124.23 USD" }, 
-                      "PoC Scope Document": { "amazon_bedrock": "1,000 USD", "total": "$ 3,150" }, 
-                     }
+SOW_COST_TABLE_MAP = {
+    "L1 Support Bot POC SOW": {
+        "poc_cost": {
+            "value": "3,536.40 USD",
+            "link": "https://calculator.aws/#/estimate?id=43b4e4384aed6e65e47832811851ce733aaa3f16"
+        }
+    },
+    "Beauty Advisor POC SOW": {
+        "poc_cost": {
+            "value": "4,525.66 USD + 200 USD (Amazon Bedrock Cost) = 4,725.66",
+            "link": "https://calculator.aws/#/estimate?id=201c3dc16abf2fc41c5e93a8fa4f3ae616b93053"
+        },
+        "prod_cost": {
+            "value": "4,525.66 USD + 1,175.82 USD (Amazon Bedrock Cost) = 5,701.48",
+            "link": "https://calculator.aws/#/estimate?id=c312aaf9a2bf80f96e4bde4977ab6469346738de"
+        }
+    },
+    "Ready Search POC Scope of Work Document": {
+        "poc_cost": {
+            "value": "2,641.40 USD",
+            "link": "https://calculator.aws/#/estimate?id=3c41e5d5a98dc397e3e304c2aadb4542b470c755"
+        }
+    },
+    "AI based Image Enhancement POC SOW": {
+        "poc_cost": {
+            "value": "2,814.34 USD",
+            "link": "https://calculator.aws/#/estimate?id=9cf3ca493700f66dbf9e8a970e60d33fb0741d30"
+        }
+    },
+    "AI based Image Inspection POC SOW": {
+        "poc_cost": {
+            "value": "3,536.40 USD",
+            "link": "https://calculator.aws/#/estimate?id=1dadf2a40780a0a86e2844a04875d150c59902ef"
+        }
+    },
+    "Gen AI for SOP POC SOW": {
+        "poc_cost": {
+            "value": "2,110.30 USD",
+            "link": "https://calculator.aws/#/estimate?id=09e220ef1f484dfa685a7de966cefff347f37d00"
+        }
+    },
+    "Project Scope Document": {
+        "prod_cost": {
+            "value": "2,993.60 USD",
+            "link": "https://calculator.aws/#/"
+        }
+    },
+    "Gen AI Speech To Speech": {
+        "prod_cost": {
+            "value": "2,124.23 USD",
+            "link": "https://calculator.aws/#/estimate?id=b2547f927dd913323eb8683c5e69aeb585b82eb5"
+        }
+    },
+    "PoC Scope Document": {
+    "summary_table": [
+        {
+            "service": "Other AWS Services",
+            "cost": "$ 2,150",
+            "link": "https://calculator.aws/estimate?id=other-aws-services"
+        },
+        {
+            "service": "Amazon Bedrock (Claude Model)",
+            "cost": "$ 1,000",
+            "note": "Calculation mentioned below"
+        },
+        {
+            "service": "Total",
+            "cost": "$ 3,150"
+        }
+    ],
+    "detailed_calculation": [
+        ["Number of documents", "200", "Assuming 5 interactions per document"],
+        ["Input Tokens per document", "10,000,000", "Anthropic Claude 3 Sonnet"],
+        ["Total Input Cost in USD", "600", ""],
+        ["Output Tokens per document", "50,000", ""],
+        ["Total Output Cost in USD", "150", ""],
+        ["Total Cost in USD", "750", ""],
+        ["Tokens for Embedding Model", "250,000,000", "Cohere English Model"],
+        ["Total Embedding Model Cost in USD", "250", ""],
+        ["Total Cost in USD per month", "1,000", ""]
+    ]
+}
+
+}
 
 SOW_DIAGRAM_MAP = {
     "L1 Support Bot POC SOW":
@@ -101,6 +175,62 @@ def add_infra_cost_table(doc, sow_type_name):
     from docx.enum.text import WD_ALIGN_PARAGRAPH
 
     cost_data = SOW_COST_TABLE_MAP.get(sow_type_name)
+    if selected_sow_name == "PoC Scope Document":
+    st.subheader("Cost Summary")
+
+    summary = cost_data.get("summary_table", [])
+
+    summary_rows = []
+    for row in summary:
+        link = row.get("link", "")
+        link_html = f"<a href='{link}' target='_blank'>Link</a>" if link else row.get("note", "")
+        summary_rows.append(
+            [row["service"], row["cost"], link_html]
+        )
+
+    st.markdown(
+        """
+        <table>
+            <tr>
+                <th>Service</th>
+                <th>Cost</th>
+                <th>Reference</th>
+            </tr>
+            {}
+        </table>
+        """.format(
+            "".join(
+                f"<tr><td>{r[0]}</td><td>{r[1]}</td><td>{r[2]}</td></tr>"
+                for r in summary_rows
+            )
+        ),
+        unsafe_allow_html=True
+    )
+
+    st.subheader("Cost Calculation Details")
+
+    detailed = cost_data.get("detailed_calculation", [])
+
+    st.markdown(
+        """
+        <table>
+            <tr>
+                <th>Particulars</th>
+                <th>Value (USD)</th>
+                <th>Remarks</th>
+            </tr>
+            {}
+        </table>
+        """.format(
+            "".join(
+                f"<tr><td>{row[0]}</td><td>{row[1]}</td><td>{row[2]}</td></tr>"
+                for row in detailed
+            )
+        ),
+        unsafe_allow_html=True
+    )
+
+
     if not cost_data:
         return
 
