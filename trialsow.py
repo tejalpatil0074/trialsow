@@ -249,9 +249,11 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
         # ---------------- SECTION 4 ----------------
         if (
             not in_toc_section
+            and not architecture_rendered
             and "4 SOLUTION ARCHITECTURE" in upper_text
             and (line.startswith('#') or line.startswith('4'))
         ):
+            architecture_rendered = True
             doc.add_heading(clean_text, level=1)
 
             diagram_path = SOW_DIAGRAM_MAP.get(sow_type_name)
@@ -264,16 +266,21 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
             i += 1
             continue
 
+
         # ---------------- SECTION 6 ----------------
         if (
             not in_toc_section
+            and not cost_table_rendered
             and "6 RESOURCES & COST ESTIMATES" in upper_text
             and (line.startswith('#') or line.startswith('6'))
         ):
+            cost_table_rendered = True
             doc.add_heading(clean_text, level=1)
             add_infra_cost_table(doc, sow_type_name)
+
             i += 1
             continue
+
 
         # ---------------- TABLE PARSING ----------------
         if line.startswith('|') and i + 1 < len(lines) and lines[i+1].strip().startswith('|'):
