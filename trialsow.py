@@ -109,15 +109,13 @@ st.markdown("""
 # WORD – COST TABLE
 # =====================================================
 def add_infra_cost_table(doc, sow_type_name):
-    if sow_type_name == "PoC Scope Document":
-        add_poc_calculation_table(doc)
-
     from docx.enum.text import WD_ALIGN_PARAGRAPH
 
     cost_data = SOW_COST_TABLE_MAP.get(sow_type_name)
     if not cost_data:
         return
 
+    # ---------- MAIN COST TABLE (ALL USE CASES) ----------
     table = doc.add_table(rows=1, cols=3)
     table.style = "Table Grid"
 
@@ -126,32 +124,60 @@ def add_infra_cost_table(doc, sow_type_name):
     hdr[1].text = "Infra Cost"
     hdr[2].text = "AWS Cost Calculator"
 
-    # ---- GENERIC ROW HANDLING ----
-    if "rows" in cost_data:
-        for item in cost_data["rows"]:
+    # ---------- PoC Scope Document ----------
+    if sow_type_name == "PoC Scope Document":
+        for row in cost_data["rows"]:
             r = table.add_row().cells
-            r[0].text = item["system"]
-            r[1].text = item["cost"]
-            r[2].text = item.get("link", item.get("note", ""))
+            r[0].text = row["system"]
+            r[1].text = row["cost"]
+            r[2].text = row.get("link", row.get("note", ""))
 
-    # ---- EXISTING USE CASES (UNCHANGED) ----
-    else:
-        if "poc_cost" in cost_data:
-            r = table.add_row().cells
-            r[0].text = "POC"
-            r[1].text = cost_data["poc_cost"]["value"]
-            r[2].text = cost_data["poc_cost"]["link"]
+        # Align center
+        for row in table.rows:
+            for cell in row.cells:
+                for p in cell.paragraphs:
+                    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-        if "prod_cost" in cost_data:
-            r = table.add_row().cells
-            r[0].text = "Production"
-            r[1].text = cost_data["prod_cost"]["value"]
-            r[2].text = cost_data["prod_cost"]["link"]
+        # ---------- DETAILED CALCULATION TABLE (BELOW) ----------
+        doc.add_paragraph("")  # spacing
+
+        calc_table = doc.add_table(
+            rows=1,
+            cols=len(cost_data["detailed_calculation"][0])
+        )
+        calc_table.style = "Table Grid"
+
+        # Header row
+        hdr_cells = calc_table.rows[0].cells
+        hdr_cells[0].text = "Parameter"
+        hdr_cells[1].text = "Value"
+        hdr_cells[2].text = "Remarks"
+
+        for row in cost_data["detailed_calculation"]:
+            cells = calc_table.add_row().cells
+            for i, val in enumerate(row):
+                cells[i].text = val
+
+        return  # 🚨 IMPORTANT: stop here, don't fall into generic logic
+
+    # ---------- ALL OTHER USE CASES (UNCHANGED) ----------
+    if "poc_cost" in cost_data:
+        r = table.add_row().cells
+        r[0].text = "POC"
+        r[1].text = cost_data["poc_cost"]["value"]
+        r[2].text = cost_data["poc_cost"]["link"]
+
+    if "prod_cost" in cost_data:
+        r = table.add_row().cells
+        r[0].text = "Production"
+        r[1].text = cost_data["prod_cost"]["value"]
+        r[2].text = cost_data["prod_cost"]["link"]
 
     for row in table.rows:
         for cell in row.cells:
             for p in cell.paragraphs:
                 p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
 
 
 # --- CACHED UTILITIES ---
