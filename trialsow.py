@@ -278,7 +278,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
             i += 1
             continue
 
-        if line.startswith('|') and i + 1 < len(lines) and lines[i+1].strip().startswith('|'):
+    if line.startswith('|') and i + 1 < len(lines) and lines[i+1].strip().startswith('|'):
             table_lines = []
             while i < len(lines) and lines[i].strip().startswith('|'):
                 table_lines.append(lines[i].strip())
@@ -301,7 +301,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                 doc.add_paragraph("")
             continue
 
-        if line.startswith('# '):
+    if line.startswith('# '):
             doc.add_heading(clean_text, level=1)
         elif line.startswith('## '):
             p = doc.add_heading(clean_text, level=2)
