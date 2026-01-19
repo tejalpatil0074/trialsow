@@ -368,9 +368,9 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
 
 
 # ---------------- SAVE DOC ----------------
-bio = io.BytesIO()
-doc.save(bio)
-return bio.getvalue()
+        bio = io.BytesIO()
+        doc.save(bio)
+        return bio.getvalue()
 
 
 # --- INITIALIZATION ---
