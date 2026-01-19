@@ -152,6 +152,10 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     from docx.enum.text import WD_ALIGN_PARAGRAPH
 
     doc = Document()
+    # --- One-time render guards ---
+    architecture_rendered = False
+    cost_table_rendered = False
+
 
     # Top-left: AWS Partner Network
     p_top = doc.add_paragraph()
@@ -254,6 +258,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
             and (line.startswith('#') or line.startswith('4'))
         ):
             architecture_rendered = True
+
             doc.add_heading(clean_text, level=1)
 
             diagram_path = SOW_DIAGRAM_MAP.get(sow_type_name)
@@ -267,6 +272,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
             continue
 
 
+
         # ---------------- SECTION 6 ----------------
         if (
             not in_toc_section
@@ -275,11 +281,13 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
             and (line.startswith('#') or line.startswith('6'))
         ):
             cost_table_rendered = True
+
             doc.add_heading(clean_text, level=1)
             add_infra_cost_table(doc, sow_type_name)
 
             i += 1
             continue
+
 
 
         # ---------------- TABLE PARSING ----------------
