@@ -176,11 +176,11 @@ def add_infra_cost_table(doc, sow_type_name):
 
     cost_data = SOW_COST_TABLE_MAP.get(sow_type_name)
     if selected_sow_name == "PoC Scope Document":
-    st.subheader("Cost Summary")
+        st.subheader("Cost Summary")
 
-    summary = cost_data.get("summary_table", [])
+        summary = cost_data.get("summary_table", [])
 
-    summary_rows = []
+        summary_rows = []
     for row in summary:
         link = row.get("link", "")
         link_html = f"<a href='{link}' target='_blank'>Link</a>" if link else row.get("note", "")
