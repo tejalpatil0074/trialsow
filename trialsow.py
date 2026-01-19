@@ -210,7 +210,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     date_p.add_run(branding_info["doc_date_str"]).bold = True
 
     doc.add_page_break()
-    
+
     # --- CONTENT PROCESSING ---
     style = doc.styles['Normal']
     style.font.name = 'Arial'
@@ -220,117 +220,122 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     i = 0
     in_toc_section = False
     toc_already_added = False
-    overview_started = False
 
     while i < len(lines):
         line = lines[i].strip()
+
         if not line:
-            if i > 0 and lines[i-1].strip():
-                doc.add_paragraph("")
+            doc.add_paragraph("")
             i += 1
             continue
 
         line_clean = re.sub(r'\*+', '', line).strip()
         clean_text = re.sub(r'^#+\s*', '', line_clean).strip()
         upper_text = clean_text.upper()
-        doc.add_paragraph("")
 
-        # Exit TOC when actual content starts
-        if in_toc_section and "2 PROJECT OVERVIEW" in upper_text:
-           in_toc_section = False
-
-    # --- Section 4: Architecture Diagram ---
-    if (
-        not in_toc_section
-        and "4 SOLUTION ARCHITECTURE" in upper_text
-        and (line.startswith('#') or line.startswith('4'))
-    ):
-        doc.add_heading(clean_text, level=1)
-        diagram_path = SOW_DIAGRAM_MAP.get(sow_type_name)
-        if diagram_path and os.path.exists(diagram_path):
-            doc.add_paragraph("")
-            doc.add_picture(diagram_path, width=Inches(6.0))
-            p_cap = doc.add_paragraph(f"{sow_type_name} – Architecture Diagram")
-            p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        doc.add_paragraph("")
-        i += 1
-        continue
-
-    # --- Section 6: Cost Table ---
-    if (
-        not in_toc_section
-        and "6 RESOURCES & COST ESTIMATES" in upper_text
-        and (line.startswith('#') or line.startswith('6'))
-    ):
-        doc.add_heading(clean_text, level=1)
-        add_infra_cost_table(doc, sow_type_name)
-        doc.add_paragraph("")
-        i += 1
-        continue
-
-
-      
-    if "1 TABLE OF CONTENTS" in upper_text:
+        # ---------------- TOC START ----------------
+        if "1 TABLE OF CONTENTS" in upper_text:
             if not toc_already_added:
-                in_toc_section = True
-                toc_already_added = True
                 doc.add_heading("1 TABLE OF CONTENTS", level=1)
+                toc_already_added = True
+                in_toc_section = True
             i += 1
             continue
 
-    if line.startswith('|') and i + 1 < len(lines) and lines[i+1].strip().startswith('|'):
-            table_lines = []
-            while i < len(lines) and lines[i].strip().startswith('|'):
-                table_lines.append(lines[i].strip())
-                i += 1
-            if len(table_lines) >= 3:
-                data_lines = [l for l in table_lines if not set(l).issubset({'|', '-', ' ', ':'})]
-                if len(data_lines) >= 2:
-                    headers = [c.strip() for c in data_lines[0].split('|') if c.strip()]
-                    table = doc.add_table(rows=1, cols=len(headers))
-                    table.style = 'Table Grid'
-                    hdr_cells = table.rows[0].cells
-                    for idx, h in enumerate(headers):
-                        hdr_cells[idx].text = h
-                    for row_str in data_lines[1:]:
-                        row_cells = table.add_row().cells
-                        r_data = [c.strip() for c in row_str.split('|') if c.strip()]
-                        for idx, c_text in enumerate(r_data):
-                            if idx < len(row_cells):
-                                row_cells[idx].text = c_text
+        # ---------------- TOC END ----------------
+        if in_toc_section and "2 PROJECT OVERVIEW" in upper_text:
+            in_toc_section = False
+
+        # ---------------- SECTION 4 ----------------
+        if (
+            not in_toc_section
+            and "4 SOLUTION ARCHITECTURE" in upper_text
+            and (line.startswith('#') or line.startswith('4'))
+        ):
+            doc.add_heading(clean_text, level=1)
+
+            diagram_path = SOW_DIAGRAM_MAP.get(sow_type_name)
+            if diagram_path and os.path.exists(diagram_path):
                 doc.add_paragraph("")
+                doc.add_picture(diagram_path, width=Inches(6.0))
+                cap = doc.add_paragraph(f"{sow_type_name} – Architecture Diagram")
+                cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+            i += 1
             continue
 
-    if line.startswith('# '):
+        # ---------------- SECTION 6 ----------------
+        if (
+            not in_toc_section
+            and "6 RESOURCES & COST ESTIMATES" in upper_text
+            and (line.startswith('#') or line.startswith('6'))
+        ):
             doc.add_heading(clean_text, level=1)
+            add_infra_cost_table(doc, sow_type_name)
+            i += 1
+            continue
+
+        # ---------------- TABLE PARSING ----------------
+        if line.startswith('|') and i + 1 < len(lines) and lines[i+1].strip().startswith('|'):
+            table_lines = []
+            while i < len(lines) and lines[i].strip().startswith('|'):
+                table_lines.append(lines[i])
+                i += 1
+
+            headers = [c.strip() for c in table_lines[0].split('|') if c.strip()]
+            table = doc.add_table(rows=1, cols=len(headers))
+            table.style = "Table Grid"
+
+            for idx, h in enumerate(headers):
+                table.rows[0].cells[idx].text = h
+
+            for row in table_lines[2:]:
+                row_cells = table.add_row().cells
+                cells = [c.strip() for c in row.split('|') if c.strip()]
+                for idx, c in enumerate(cells):
+                    row_cells[idx].text = c
+
+            continue
+
+        # ---------------- HEADINGS ----------------
+        if line.startswith('# '):
+            doc.add_heading(clean_text, level=1)
+
         elif line.startswith('## '):
-            p = doc.add_heading(clean_text, level=2)
+            h = doc.add_heading(clean_text, level=2)
             if in_toc_section:
-                p.paragraph_format.left_indent = Inches(0.4)
+                h.paragraph_format.left_indent = Inches(0.4)
+
         elif line.startswith('### '):
-            p = doc.add_heading(clean_text, level=3)
+            h = doc.add_heading(clean_text, level=3)
             if in_toc_section:
-                p.paragraph_format.left_indent = Inches(0.8)
+                h.paragraph_format.left_indent = Inches(0.8)
+
+        # ---------------- BULLETS ----------------
         elif line.startswith('- ') or line.startswith('* '):
-            bullet_text = re.sub(r'^[-*]\s*', '', clean_text)
-            p = doc.add_paragraph(bullet_text, style='List Bullet')
+            p = doc.add_paragraph(clean_text[2:], style="List Bullet")
             if in_toc_section:
                 p.paragraph_format.left_indent = Inches(0.4)
+
+        # ---------------- NORMAL TEXT ----------------
         else:
             p = doc.add_paragraph(clean_text)
-            if in_toc_section and len(clean_text) > 3 and clean_text[0].isdigit():
-                 p.paragraph_format.left_indent = Inches(0.4)
-            
-            # Segregation bolding logic for all key sections and stakeholder sub-headers
+
             segregation_keywords = [
-                "PARTNER EXECUTIVE SPONSOR", "CUSTOMER EXECUTIVE SPONSOR", 
-                "AWS EXECUTIVE SPONSOR", "PROJECT ESCALATION CONTACTS",
-                "DEPENDENCIES:", "ASSUMPTIONS:", "SPONSOR:", "CONTACTS:"
+                "PARTNER EXECUTIVE SPONSOR",
+                "CUSTOMER EXECUTIVE SPONSOR",
+                "AWS EXECUTIVE SPONSOR",
+                "PROJECT ESCALATION CONTACTS",
+                "ASSUMPTIONS",
+                "DEPENDENCIES"
             ]
-            if any(key in upper_text for key in segregation_keywords):
+
+            if any(k in upper_text for k in segregation_keywords):
                 if p.runs:
                     p.runs[0].bold = True
+
         i += 1
+
             
     bio = io.BytesIO()
     doc.save(bio)
