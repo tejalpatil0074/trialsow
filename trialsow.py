@@ -33,6 +33,7 @@ SOW_COST_TABLE_MAP = { "L1 Support Bot POC SOW": { "poc_cost": { "value": "3,536
                                                                       ["Total Embedding Model Cost in USD", "250", ""], 
                                                                       ["Total Cost in USD per month", "1,000", ""] ] 
                                             }
+                     }
 
 SOW_DIAGRAM_MAP = {
     "L1 Support Bot POC SOW":
