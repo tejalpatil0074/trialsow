@@ -603,6 +603,10 @@ if st.session_state.generated_sow:
     st.divider()
     st.header("3. Review & Export")
     tab_edit, tab_preview = st.tabs(["✍️ Document Editor", "📄 Visual Preview"])
+if "docx_data" not in st.session_state:
+    st.session_state.docx_data = None
+
+
     
     with tab_edit:
         st.session_state.generated_sow = st.text_area(
@@ -638,12 +642,18 @@ if st.session_state.generated_sow:
     }
 
         
-        docx_data = create_docx_logic(st.session_state.generated_sow, branding_info, selected_sow_name)
-        
-        st.download_button(
-            label="📥 Download Now (.docx)", 
-            data=docx_data, 
-            file_name=f"SOW_{selected_sow_name.replace(' ', '_')}.docx", 
-            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", 
-            use_container_width=True
+        st.session_state.docx_data = create_docx_logic(
+        st.session_state.generated_sow,
+        branding_info,
+        selected_sow_name
         )
+        
+        if st.session_state.docx_data:
+        st.download_button(
+        label="📥 Download Now (.docx)",
+        data=st.session_state.docx_data,
+        file_name=f"SOW_{selected_sow_name.replace(' ', '_')}.docx",
+        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        use_container_width=True
+        )
+
