@@ -13,7 +13,7 @@ AWS_PN_LOGO = os.path.join(ASSETS_DIR, "aws partner logo.jpg")
 ONETURE_LOGO = os.path.join(ASSETS_DIR, "oneture logo1.jpg")
 AWS_ADV_LOGO = os.path.join(ASSETS_DIR, "aws advanced logo1.jpg")
 
-SOW_COST_TABLE_MAP = { "L1 Support Bot POC SOW": { "poc_cost": "3,536.40 USD", "https://calculator.aws/#/estimate?id=43b4e4384aed6e65e47832811851ce733aaa3f16"  }, 
+SOW_COST_TABLE_MAP = { "L1 Support Bot POC SOW": { "poc_cost": "3,536.40 USD", "https://calculator.aws/#/estimate?id=43b4e4384aed6e65e47832811851ce733aaa3f16" }, 
                       "Beauty Advisor POC SOW": { "poc_cost": "4,525.66 USD + 200 USD (Amazon Bedrock Cost) = 4,725.66", "https://calculator.aws/#/estimate?id=201c3dc16abf2fc41c5e93a8fa4f3ae616b93053", 
                                                  "prod_cost": "4,525.66 USD + 1,175.82 USD (Amazon Bedrock Cost) = 5,701.48", "https://calculator.aws/#/estimate?id=c312aaf9a2bf80f96e4bde4977ab6469346738de"   }, 
                       "Ready Search POC Scope of Work Document":{ "poc_cost": "2,641.40 USD", "https://calculator.aws/#/estimate?id=3c41e5d5a98dc397e3e304c2aadb4542b470c755" }, 
