@@ -246,123 +246,125 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
         clean_text = re.sub(r'^#+\s*', '', line_clean).strip()
         upper_text = clean_text.upper()
 
-# ---------------- TOC START ----------------
-if "1 TABLE OF CONTENTS" in upper_text:
-    if not toc_already_added:
-        doc.add_heading("1 TABLE OF CONTENTS", level=1)
-        toc_already_added = True
-    in_toc_section = True
-    i += 1
-    continue
-# ---------------- TOC END ----------------
+        # ---------------- TOC START ----------------
+        if "1 TABLE OF CONTENTS" in upper_text:
+            if not toc_already_added:
+                doc.add_heading("1 TABLE OF CONTENTS", level=1)
+                toc_already_added = True
+            in_toc_section = True
+            i += 1
+            continue
+        # ---------------- TOC END ----------------
 
-if in_toc_section and "2 PROJECT OVERVIEW" in upper_text:
-    in_toc_section = False
-
-
-# ---------------- SECTION 4 ----------------
-if (
-    not in_toc_section
-    and not architecture_rendered
-    and "4 SOLUTION ARCHITECTURE" in upper_text
-    and (line.startswith('#') or line.startswith('4'))
-):
-    architecture_rendered = True
-    doc.add_heading(clean_text, level=1)
-
-    diagram_path = SOW_DIAGRAM_MAP.get(sow_type_name)
-    if diagram_path and os.path.exists(diagram_path):
-        doc.add_paragraph("")
-        doc.add_picture(diagram_path, width=Inches(6.0))
-        cap = doc.add_paragraph(f"{sow_type_name} – Architecture Diagram")
-        cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
-
-    i += 1
-    continue
+        if in_toc_section and "2 PROJECT OVERVIEW" in upper_text:
+            in_toc_section = False
 
 
-# ---------------- SECTION 6 ----------------
-if (
-    not in_toc_section
-    and not cost_table_rendered
-    and "6 RESOURCES & COST ESTIMATES" in upper_text
-    and (line.startswith('#') or line.startswith('6'))
-):
-    cost_table_rendered = True
-    doc.add_heading(clean_text, level=1)
-    add_infra_cost_table(doc, sow_type_name)
-    i += 1
-    continue
+        # ---------------- SECTION 4 ----------------
+        if (
+            not in_toc_section
+            and not architecture_rendered
+            and "4 SOLUTION ARCHITECTURE" in upper_text
+            and (line.startswith('#') or line.startswith('4'))
+        ):
+            architecture_rendered = True
+            doc.add_heading(clean_text, level=1)
+
+            diagram_path = SOW_DIAGRAM_MAP.get(sow_type_name)
+            if diagram_path and os.path.exists(diagram_path):
+                doc.add_paragraph("")
+                doc.add_picture(diagram_path, width=Inches(6.0))
+                cap = doc.add_paragraph(f"{sow_type_name} – Architecture Diagram")
+                cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+            i += 1
+            continue
 
 
-# ---------------- TABLE PARSING ----------------
-if (
-    line.startswith('|')
-    and i + 1 < len(lines)
-    and lines[i + 1].strip().startswith('|')
-):
-    table_lines = []
+        # ---------------- SECTION 6 ----------------
+        if (
+            not in_toc_section
+            and not cost_table_rendered
+            and "6 RESOURCES & COST ESTIMATES" in upper_text
+            and (line.startswith('#') or line.startswith('6'))
+        ):
+            cost_table_rendered = True
+            doc.add_heading(clean_text, level=1)
+            add_infra_cost_table(doc, sow_type_name)
+            i += 1
+            continue
 
-    while i < len(lines) and lines[i].strip().startswith('|'):
-        table_lines.append(lines[i])
+
+        # ---------------- TABLE PARSING ----------------
+        if (
+            line.startswith('|')
+            and i + 1 < len(lines)
+            and lines[i + 1].strip().startswith('|')
+        ):
+            table_lines = []
+
+            while i < len(lines) and lines[i].strip().startswith('|'):
+                table_lines.append(lines[i])
+                i += 1
+
+            headers = [c.strip() for c in table_lines[0].split('|') if c.strip()]
+            table = doc.add_table(rows=1, cols=len(headers))
+            table.style = "Table Grid"
+
+            for idx, h in enumerate(headers):
+                table.rows[0].cells[idx].text = h
+
+            for row in table_lines[2:]:
+                row_cells = table.add_row().cells
+                cells = [c.strip() for c in row.split('|') if c.strip()]
+                for idx, c in enumerate(cells):
+                    row_cells[idx].text = c
+
+            continue
+
+
+        # ---------------- HEADINGS ----------------
+        if line.startswith('# '):
+            doc.add_heading(clean_text, level=1)
+
+        elif line.startswith('## '):
+            h = doc.add_heading(clean_text, level=2)
+            if in_toc_section:
+                h.paragraph_format.left_indent = Inches(0.4)
+
+        elif line.startswith('### '):
+            h = doc.add_heading(clean_text, level=3)
+            if in_toc_section:
+                h.paragraph_format.left_indent = Inches(0.8)
+
+
+        # ---------------- BULLETS ----------------
+        elif line.startswith('- ') or line.startswith('* '):
+            p = doc.add_paragraph(clean_text[2:], style="List Bullet")
+            if in_toc_section:
+                p.paragraph_format.left_indent = Inches(0.4)
+
+
+        # ---------------- NORMAL TEXT ----------------
+        else:
+            p = doc.add_paragraph(clean_text)
+
+            segregation_keywords = [
+                "PARTNER EXECUTIVE SPONSOR",
+                "CUSTOMER EXECUTIVE SPONSOR",
+                "AWS EXECUTIVE SPONSOR",
+                "PROJECT ESCALATION CONTACTS",
+                "ASSUMPTIONS",
+                "DEPENDENCIES",
+            ]
+
+            if any(k in upper_text for k in segregation_keywords):
+                if p.runs:
+                    p.runs[0].bold = True
+
         i += 1
+        continue 
 
-    headers = [c.strip() for c in table_lines[0].split('|') if c.strip()]
-    table = doc.add_table(rows=1, cols=len(headers))
-    table.style = "Table Grid"
-
-    for idx, h in enumerate(headers):
-        table.rows[0].cells[idx].text = h
-
-    for row in table_lines[2:]:
-        row_cells = table.add_row().cells
-        cells = [c.strip() for c in row.split('|') if c.strip()]
-        for idx, c in enumerate(cells):
-            row_cells[idx].text = c
-
-    continue
-
-
-# ---------------- HEADINGS ----------------
-if line.startswith('# '):
-    doc.add_heading(clean_text, level=1)
-
-elif line.startswith('## '):
-    h = doc.add_heading(clean_text, level=2)
-    if in_toc_section:
-        h.paragraph_format.left_indent = Inches(0.4)
-
-elif line.startswith('### '):
-    h = doc.add_heading(clean_text, level=3)
-    if in_toc_section:
-        h.paragraph_format.left_indent = Inches(0.8)
-
-
-# ---------------- BULLETS ----------------
-elif line.startswith('- ') or line.startswith('* '):
-    p = doc.add_paragraph(clean_text[2:], style="List Bullet")
-    if in_toc_section:
-        p.paragraph_format.left_indent = Inches(0.4)
-
-
-# ---------------- NORMAL TEXT ----------------
-else:
-    p = doc.add_paragraph(clean_text)
-
-    segregation_keywords = [
-        "PARTNER EXECUTIVE SPONSOR",
-        "CUSTOMER EXECUTIVE SPONSOR",
-        "AWS EXECUTIVE SPONSOR",
-        "PROJECT ESCALATION CONTACTS",
-        "ASSUMPTIONS",
-        "DEPENDENCIES",
-    ]
-
-    if any(k in upper_text for k in segregation_keywords):
-        if p.runs:
-            p.runs[0].bold = True
-
-i += 1
 
 
 # ---------------- SAVE DOC ----------------
