@@ -270,7 +270,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
 
 
       
-      if "1 TABLE OF CONTENTS" in upper_text:
+    if "1 TABLE OF CONTENTS" in upper_text:
             if not toc_already_added:
                 in_toc_section = True
                 toc_already_added = True
