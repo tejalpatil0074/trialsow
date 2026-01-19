@@ -234,6 +234,10 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     toc_already_added = False
     overview_started = False
 
+    architecture_rendered = False
+    cost_table_rendered = False
+
+
     while i < len(lines):
         line = lines[i].strip()
         if not line:
