@@ -5,10 +5,19 @@ import re
 import os
 
 # ===================== NEW IMPORTS (REQUIRED) =====================
-from PIL import Image
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.opc.constants import RELATIONSHIP_TYPE as RT
+from PIL import Image
+
+def is_valid_image(path):
+    try:
+        with Image.open(path) as img:
+            img.verify()   # verifies image integrity
+        return True
+    except Exception:
+        return False
+
 # =================================================================
 
 # --- FILE PATHING & DIAGRAM MAPPING ---
@@ -246,9 +255,21 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
 
 # ===================== STREAMLIT PREVIEW FIX =====================
 if "generated_sow" in st.session_state:
-    diagram = SOW_DIAGRAM_MAP.get(st.session_state.get("selected_sow_name"))
-    if diagram and os.path.exists(diagram) and is_valid_image(diagram):
-        st.image(diagram, use_container_width=True)
+    diagram_path_out = SOW_DIAGRAM_MAP.get(selected_sow_name)
+
+if (
+    diagram_path_out
+    and os.path.exists(diagram_path_out)
+    and is_valid_image(diagram_path_out)
+):
+    st.image(
+        diagram_path_out,
+        caption=f"{selected_sow_name} Architecture",
+        use_container_width=True
+    )
+else:
+    st.info("📐 Architecture diagram will be finalized during implementation.")
+
 # ============================================================
 
 
