@@ -235,39 +235,42 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
         upper_text = clean_text.upper()
         doc.add_paragraph("")
 
-         # Trigger for Section 4: Insert Architecture Diagram
-        if "4 SOLUTION ARCHITECTURE" in upper_text and (line.startswith('#') or line.startswith('4')):
-            doc.add_heading(clean_text, level=1)
-            diagram_path = SOW_DIAGRAM_MAP.get(sow_type_name)
-            if diagram_path and os.path.exists(diagram_path):
-                doc.add_paragraph("")
-                try:
-                    doc.add_picture(diagram_path, width=Inches(6.0))
-                    p_cap = doc.add_paragraph(f"{sow_type_name} – Architecture Diagram")
-                    p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                except:
-                    doc.add_paragraph("[Architecture Diagram - Missing or Incompatible Format]")
-                doc.add_paragraph("")
-            i += 1
-            continue
+    # Exit TOC when actual content starts
+    if in_toc_section and "2 PROJECT OVERVIEW" in upper_text:
+    in_toc_section = False
 
-        # Trigger for Section 6: Insert Cost Table
-        if "6 RESOURCES & COST ESTIMATES" in upper_text and (line.startswith('#') or line.startswith('6')):
-            doc.add_heading(clean_text, level=1)
-            add_infra_cost_table(doc, sow_type_name)
+    # --- Section 4: Architecture Diagram ---
+    if (
+        not in_toc_section
+        and "4 SOLUTION ARCHITECTURE" in upper_text
+        and (line.startswith('#') or line.startswith('4'))
+    ):
+        doc.add_heading(clean_text, level=1)
+        diagram_path = SOW_DIAGRAM_MAP.get(sow_type_name)
+        if diagram_path and os.path.exists(diagram_path):
             doc.add_paragraph("")
-          
-            i += 1
-            continue
+            doc.add_picture(diagram_path, width=Inches(6.0))
+            p_cap = doc.add_paragraph(f"{sow_type_name} – Architecture Diagram")
+            p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        doc.add_paragraph("")
+        i += 1
+        continue
 
-        if ("2 PROJECT OVERVIEW" in upper_text) and (line.startswith('#') or line.startswith('2')) and not overview_started:
-            in_toc_section = False
-            overview_started = True
-            doc.add_heading(clean_text, level=1)
-            i += 1
-            continue
+    # --- Section 6: Cost Table ---
+    if (
+        not in_toc_section
+        and "6 RESOURCES & COST ESTIMATES" in upper_text
+        and (line.startswith('#') or line.startswith('6'))
+    ):
+        doc.add_heading(clean_text, level=1)
+        add_infra_cost_table(doc, sow_type_name)
+        doc.add_paragraph("")
+        i += 1
+        continue
 
-        if "1 TABLE OF CONTENTS" in upper_text:
+
+      
+      if "1 TABLE OF CONTENTS" in upper_text:
             if not toc_already_added:
                 in_toc_section = True
                 toc_already_added = True
