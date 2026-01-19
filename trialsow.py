@@ -13,26 +13,16 @@ AWS_PN_LOGO = os.path.join(ASSETS_DIR, "aws partner logo.jpg")
 ONETURE_LOGO = os.path.join(ASSETS_DIR, "oneture logo1.jpg")
 AWS_ADV_LOGO = os.path.join(ASSETS_DIR, "aws advanced logo1.jpg")
 
-SOW_COST_TABLE_MAP = { "L1 Support Bot POC SOW": { "poc_cost": { "value": "3,536.40 USD", "link": "https://calculator.aws/#/estimate?id=43b4e4384aed6e65e47832811851ce733aaa3f16" } },
-                      "Beauty Advisor POC SOW": { "poc_cost": { "value": "4,525.66 USD + 200 USD (Amazon Bedrock Cost) = 4,725.66", "link": "https://calculator.aws/#/estimate?id=201c3dc16abf2fc41c5e93a8fa4f3ae616b93053" },
-                                                 "prod_cost": { "value": "4,525.66 USD + 1,175.82 USD (Amazon Bedrock Cost) = 5,701.48", "link": "https://calculator.aws/#/estimate?id=c312aaf9a2bf80f96e4bde4977ab6469346738de" } }, 
-                      "Ready Search POC Scope of Work Document": { "poc_cost": { "value": "2,641.40 USD", "link": "https://calculator.aws/#/estimate?id=3c41e5d5a98dc397e3e304c2aadb4542b470c755" } }, 
-                      "AI based Image Enhancement POC SOW": { "poc_cost": { "value": "2,814.34 USD", "link": "https://calculator.aws/#/estimate?id=9cf3ca493700f66dbf9e8a970e60d33fb0741d30" } }, 
-                      "AI based Image Inspection POC SOW": { "poc_cost": { "value": "3,536.40 USD", "link": "https://calculator.aws/#/estimate?id=1dadf2a40780a0a86e2844a04875d150c59902ef" } }, 
-                      "Gen AI for SOP POC SOW": { "poc_cost": { "value": "2,110.30 USD", "link": "https://calculator.aws/#/estimate?id=09e220ef1f484dfa685a7de966cefff347f37d00" } }, 
-                      "Project Scope Document": { "prod_cost": { "value": "2,993.60 USD", "link": "https://calculator.aws/#/" } }, 
-                      "Gen AI Speech To Speech": { "prod_cost": { "value": "2,124.23 USD", "link": "https://calculator.aws/#/estimate?id=b2547f927dd913323eb8683c5e69aeb585b82eb5" } }, 
-                      "PoC Scope Document": { "rows": [ { "system": "Other AWS Services", "cost": "$ 2,150", "link": "https://calculator.aws/estimate?id=other-aws-services" }, 
-                                                                { "system": "Amazon Bedrock (Claude Model)", "cost": "$ 1,000", "note": "Calculation mentioned below" }, 
-                                                                { "system": "Total", "cost": "$ 3,150" } ], 
-                                             "detailed_calculation": [ ["Number of documents", "200", "Assuming 5 interactions per document"], 
-                                                                      ["Input Tokens per document", "10,000,000", "Anthropic Claude 3 Sonnet"], 
-                                                                      ["Total Input Cost in USD", "600", ""], ["Output Tokens per document", "50,000", ""], 
-                                                                      ["Total Output Cost in USD", "150", ""], ["Total Cost in USD", "750", ""], 
-                                                                      ["Tokens for Embedding Model", "250,000,000", "Cohere English Model"], 
-                                                                      ["Total Embedding Model Cost in USD", "250", ""], 
-                                                                      ["Total Cost in USD per month", "1,000", ""] ] 
-                                            }
+SOW_COST_TABLE_MAP = { "L1 Support Bot POC SOW": { "poc_cost": "3,536.40 USD", "https://calculator.aws/#/estimate?id=43b4e4384aed6e65e47832811851ce733aaa3f16"  }, 
+                      "Beauty Advisor POC SOW": { "poc_cost": "4,525.66 USD + 200 USD (Amazon Bedrock Cost) = 4,725.66", "https://calculator.aws/#/estimate?id=201c3dc16abf2fc41c5e93a8fa4f3ae616b93053", 
+                                                 "prod_cost": "4,525.66 USD + 1,175.82 USD (Amazon Bedrock Cost) = 5,701.48", "https://calculator.aws/#/estimate?id=c312aaf9a2bf80f96e4bde4977ab6469346738de"   }, 
+                      "Ready Search POC Scope of Work Document":{ "poc_cost": "2,641.40 USD", "https://calculator.aws/#/estimate?id=3c41e5d5a98dc397e3e304c2aadb4542b470c755" }, 
+                      "AI based Image Enhancement POC SOW": { "poc_cost": "2,814.34 USD", "https://calculator.aws/#/estimate?id=9cf3ca493700f66dbf9e8a970e60d33fb0741d30"  }, 
+                      "AI based Image Inspection POC SOW": { "poc_cost": "3,536.40 USD", "https://calculator.aws/#/estimate?id=1dadf2a40780a0a86e2844a04875d150c59902ef" }, 
+                      "Gen AI for SOP POC SOW": { "poc_cost": "2,110.30 USD", "https://calculator.aws/#/estimate?id=09e220ef1f484dfa685a7de966cefff347f37d00" }, 
+                      "Project Scope Document": { "prod_cost": "2,993.60 USD", "https://calculator.aws/#/"  }, 
+                      "Gen AI Speech To Speech": { "prod_cost": "2,124.23 USD", "https://calculator.aws/#/estimate?id=b2547f927dd913323eb8683c5e69aeb585b82eb5" }, 
+                      "PoC Scope Document": { "amazon_bedrock": "1,000 USD", "total": "$ 3,150", "https://calculator.aws/estimate?id=other-aws-services" }, 
                      }
 
 SOW_DIAGRAM_MAP = {
@@ -115,70 +105,43 @@ def add_infra_cost_table(doc, sow_type_name):
     if not cost_data:
         return
 
-    # ---------- MAIN COST TABLE (ALL USE CASES) ----------
     table = doc.add_table(rows=1, cols=3)
     table.style = "Table Grid"
-
     hdr = table.rows[0].cells
     hdr[0].text = "System"
     hdr[1].text = "Infra Cost"
     hdr[2].text = "AWS Cost Calculator"
 
-    # ---------- PoC Scope Document ----------
-    if sow_type_name == "PoC Scope Document":
-        for row in cost_data["rows"]:
-            r = table.add_row().cells
-            r[0].text = row["system"]
-            r[1].text = row["cost"]
-            r[2].text = row.get("link", row.get("note", ""))
+    aws_link = "https://calculator.aws/#/"
 
-        # Align center
-        for row in table.rows:
-            for cell in row.cells:
-                for p in cell.paragraphs:
-                    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-
-        # ---------- DETAILED CALCULATION TABLE (BELOW) ----------
-        doc.add_paragraph("")  # spacing
-
-        calc_table = doc.add_table(
-            rows=1,
-            cols=len(cost_data["detailed_calculation"][0])
-        )
-        calc_table.style = "Table Grid"
-
-        # Header row
-        hdr_cells = calc_table.rows[0].cells
-        hdr_cells[0].text = "Parameter"
-        hdr_cells[1].text = "Value"
-        hdr_cells[2].text = "Remarks"
-
-        for row in cost_data["detailed_calculation"]:
-            cells = calc_table.add_row().cells
-            for i, val in enumerate(row):
-                cells[i].text = val
-
-        return  # 🚨 IMPORTANT: stop here, don't fall into generic logic
-
-    # ---------- ALL OTHER USE CASES (UNCHANGED) ----------
     if "poc_cost" in cost_data:
         r = table.add_row().cells
         r[0].text = "POC"
-        r[1].text = cost_data["poc_cost"]["value"]
-        r[2].text = cost_data["poc_cost"]["link"]
+        r[1].text = cost_data["poc_cost"]
+        r[2].text = aws_link
 
     if "prod_cost" in cost_data:
         r = table.add_row().cells
         r[0].text = "Production"
-        r[1].text = cost_data["prod_cost"]["value"]
-        r[2].text = cost_data["prod_cost"]["link"]
+        r[1].text = cost_data["prod_cost"]
+        r[2].text = aws_link
+
+    if "amazon_bedrock" in cost_data:
+        r = table.add_row().cells
+        r[0].text = "Amazon Bedrock"
+        r[1].text = cost_data["amazon_bedrock"]
+        r[2].text = aws_link
+
+    if "total" in cost_data:
+        r = table.add_row().cells
+        r[0].text = "Total"
+        r[1].text = cost_data["total"]
+        r[2].text = aws_link
 
     for row in table.rows:
         for cell in row.cells:
             for p in cell.paragraphs:
                 p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-
-
 
 # --- CACHED UTILITIES ---
 def create_docx_logic(text_content, branding_info, sow_type_name):
@@ -190,6 +153,10 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     from docx.enum.text import WD_ALIGN_PARAGRAPH
 
     doc = Document()
+    # --- One-time render guards ---
+    architecture_rendered = False
+    cost_table_rendered = False
+
 
     # Top-left: AWS Partner Network
     p_top = doc.add_paragraph()
@@ -248,7 +215,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     date_p.add_run(branding_info["doc_date_str"]).bold = True
 
     doc.add_page_break()
-    
+
     # --- CONTENT PROCESSING ---
     style = doc.styles['Normal']
     style.font.name = 'Arial'
@@ -258,17 +225,12 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     i = 0
     in_toc_section = False
     toc_already_added = False
-    overview_started = False
-
-    architecture_rendered = False
-    cost_table_rendered = False
-
 
     while i < len(lines):
         line = lines[i].strip()
+
         if not line:
-            if i > 0 and lines[i-1].strip():
-                doc.add_paragraph("")
+            doc.add_paragraph("")
             i += 1
             continue
 
@@ -281,14 +243,13 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
             if not toc_already_added:
                 doc.add_heading("1 TABLE OF CONTENTS", level=1)
                 toc_already_added = True
-            in_toc_section = True
+                in_toc_section = True
             i += 1
             continue
-        # ---------------- TOC END ----------------
 
+        # ---------------- TOC END ----------------
         if in_toc_section and "2 PROJECT OVERVIEW" in upper_text:
             in_toc_section = False
-
 
         # ---------------- SECTION 4 ----------------
         if (
@@ -298,6 +259,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
             and (line.startswith('#') or line.startswith('4'))
         ):
             architecture_rendered = True
+
             doc.add_heading(clean_text, level=1)
 
             diagram_path = SOW_DIAGRAM_MAP.get(sow_type_name)
@@ -311,6 +273,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
             continue
 
 
+
         # ---------------- SECTION 6 ----------------
         if (
             not in_toc_section
@@ -319,20 +282,18 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
             and (line.startswith('#') or line.startswith('6'))
         ):
             cost_table_rendered = True
+
             doc.add_heading(clean_text, level=1)
             add_infra_cost_table(doc, sow_type_name)
+
             i += 1
             continue
 
 
-        # ---------------- TABLE PARSING ----------------
-        if (
-            line.startswith('|')
-            and i + 1 < len(lines)
-            and lines[i + 1].strip().startswith('|')
-        ):
-            table_lines = []
 
+        # ---------------- TABLE PARSING ----------------
+        if line.startswith('|') and i + 1 < len(lines) and lines[i+1].strip().startswith('|'):
+            table_lines = []
             while i < len(lines) and lines[i].strip().startswith('|'):
                 table_lines.append(lines[i])
                 i += 1
@@ -352,7 +313,6 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
 
             continue
 
-
         # ---------------- HEADINGS ----------------
         if line.startswith('# '):
             doc.add_heading(clean_text, level=1)
@@ -367,13 +327,11 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
             if in_toc_section:
                 h.paragraph_format.left_indent = Inches(0.8)
 
-
         # ---------------- BULLETS ----------------
         elif line.startswith('- ') or line.startswith('* '):
             p = doc.add_paragraph(clean_text[2:], style="List Bullet")
             if in_toc_section:
                 p.paragraph_format.left_indent = Inches(0.4)
-
 
         # ---------------- NORMAL TEXT ----------------
         else:
@@ -385,7 +343,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                 "AWS EXECUTIVE SPONSOR",
                 "PROJECT ESCALATION CONTACTS",
                 "ASSUMPTIONS",
-                "DEPENDENCIES",
+                "DEPENDENCIES"
             ]
 
             if any(k in upper_text for k in segregation_keywords):
@@ -393,15 +351,11 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                     p.runs[0].bold = True
 
         i += 1
-        continue 
 
-
-
-# ---------------- SAVE DOC ----------------
-        bio = io.BytesIO()
-        doc.save(bio)
-        return bio.getvalue()
-
+            
+    bio = io.BytesIO()
+    doc.save(bio)
+    return bio.getvalue()
 
 # --- INITIALIZATION ---
 if 'generated_sow' not in st.session_state:
@@ -448,13 +402,6 @@ with st.sidebar:
     selected_sow_name = st.selectbox("1.1 Scope of Work Type", sow_type_options)
 
     # Sidebar architecture preview
-    st.divider()
-    st.header("🧩 Architecture Preview")
-    diagram_path_sidebar = SOW_DIAGRAM_MAP.get(selected_sow_name)
-    if diagram_path_sidebar and os.path.exists(diagram_path_sidebar):
-        st.image(diagram_path_sidebar, caption="Architecture Diagram", use_container_width=True)
-    else:
-        st.warning("No architecture diagram available.")
 
     st.divider()
     industry_options = ["Retail / E-commerce", "BFSI", "Manufacturing", "Telecom", "Healthcare", "Energy / Utilities", "Logistics", "Media", "Government", "Other (specify)"]
@@ -603,10 +550,6 @@ if st.session_state.generated_sow:
     st.divider()
     st.header("3. Review & Export")
     tab_edit, tab_preview = st.tabs(["✍️ Document Editor", "📄 Visual Preview"])
-if "docx_data" not in st.session_state:
-    st.session_state.docx_data = None
-
-
     
     with tab_edit:
         st.session_state.generated_sow = st.text_area(
@@ -633,8 +576,7 @@ if "docx_data" not in st.session_state:
         st.markdown('</div>', unsafe_allow_html=True)
     
     st.write("")
-
-  
+    
     if st.button("💾 Prepare Microsoft Word Document"):
         branding_info = {
         "sow_name": selected_sow_name,
