@@ -252,8 +252,8 @@ if "1 TABLE OF CONTENTS" in upper_text:
         doc.add_heading("1 TABLE OF CONTENTS", level=1)
         toc_already_added = True
     in_toc_section = True
-i += 1
-continue
+    i += 1
+    continue
 # ---------------- TOC END ----------------
 
 if in_toc_section and "2 PROJECT OVERVIEW" in upper_text:
