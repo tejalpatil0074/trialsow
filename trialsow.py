@@ -13,90 +13,26 @@ AWS_PN_LOGO = os.path.join(ASSETS_DIR, "aws partner logo.jpg")
 ONETURE_LOGO = os.path.join(ASSETS_DIR, "oneture logo1.jpg")
 AWS_ADV_LOGO = os.path.join(ASSETS_DIR, "aws advanced logo1.jpg")
 
-SOW_COST_TABLE_MAP = {
-    "L1 Support Bot POC SOW": {
-        "poc_cost": {
-            "value": "3,536.40 USD",
-            "link": "https://calculator.aws/#/estimate?id=43b4e4384aed6e65e47832811851ce733aaa3f16"
-        }
-    },
-    "Beauty Advisor POC SOW": {
-        "poc_cost": {
-            "value": "4,525.66 USD + 200 USD (Amazon Bedrock Cost) = 4,725.66",
-            "link": "https://calculator.aws/#/estimate?id=201c3dc16abf2fc41c5e93a8fa4f3ae616b93053"
-        },
-        "prod_cost": {
-            "value": "4,525.66 USD + 1,175.82 USD (Amazon Bedrock Cost) = 5,701.48",
-            "link": "https://calculator.aws/#/estimate?id=c312aaf9a2bf80f96e4bde4977ab6469346738de"
-        }
-    },
-    "Ready Search POC Scope of Work Document": {
-        "poc_cost": {
-            "value": "2,641.40 USD",
-            "link": "https://calculator.aws/#/estimate?id=3c41e5d5a98dc397e3e304c2aadb4542b470c755"
-        }
-    },
-    "AI based Image Enhancement POC SOW": {
-        "poc_cost": {
-            "value": "2,814.34 USD",
-            "link": "https://calculator.aws/#/estimate?id=9cf3ca493700f66dbf9e8a970e60d33fb0741d30"
-        }
-    },
-    "AI based Image Inspection POC SOW": {
-        "poc_cost": {
-            "value": "3,536.40 USD",
-            "link": "https://calculator.aws/#/estimate?id=1dadf2a40780a0a86e2844a04875d150c59902ef"
-        }
-    },
-    "Gen AI for SOP POC SOW": {
-        "poc_cost": {
-            "value": "2,110.30 USD",
-            "link": "https://calculator.aws/#/estimate?id=09e220ef1f484dfa685a7de966cefff347f37d00"
-        }
-    },
-    "Project Scope Document": {
-        "prod_cost": {
-            "value": "2,993.60 USD",
-            "link": "https://calculator.aws/#/"
-        }
-    },
-    "Gen AI Speech To Speech": {
-        "prod_cost": {
-            "value": "2,124.23 USD",
-            "link": "https://calculator.aws/#/estimate?id=b2547f927dd913323eb8683c5e69aeb585b82eb5"
-        }
-    },
-    "PoC Scope Document": {
-    "summary_table": [
-        {
-            "service": "Other AWS Services",
-            "cost": "$ 2,150",
-            "link": "https://calculator.aws/estimate?id=other-aws-services"
-        },
-        {
-            "service": "Amazon Bedrock (Claude Model)",
-            "cost": "$ 1,000",
-            "note": "Calculation mentioned below"
-        },
-        {
-            "service": "Total",
-            "cost": "$ 3,150"
-        }
-    ],
-    "detailed_calculation": [
-        ["Number of documents", "200", "Assuming 5 interactions per document"],
-        ["Input Tokens per document", "10,000,000", "Anthropic Claude 3 Sonnet"],
-        ["Total Input Cost in USD", "600", ""],
-        ["Output Tokens per document", "50,000", ""],
-        ["Total Output Cost in USD", "150", ""],
-        ["Total Cost in USD", "750", ""],
-        ["Tokens for Embedding Model", "250,000,000", "Cohere English Model"],
-        ["Total Embedding Model Cost in USD", "250", ""],
-        ["Total Cost in USD per month", "1,000", ""]
-    ]
-}
-
-}
+SOW_COST_TABLE_MAP = { "L1 Support Bot POC SOW": { "poc_cost": { "value": "3,536.40 USD", "link": "https://calculator.aws/#/estimate?id=43b4e4384aed6e65e47832811851ce733aaa3f16" } },
+                      "Beauty Advisor POC SOW": { "poc_cost": { "value": "4,525.66 USD + 200 USD (Amazon Bedrock Cost) = 4,725.66", "link": "https://calculator.aws/#/estimate?id=201c3dc16abf2fc41c5e93a8fa4f3ae616b93053" },
+                                                 "prod_cost": { "value": "4,525.66 USD + 1,175.82 USD (Amazon Bedrock Cost) = 5,701.48", "link": "https://calculator.aws/#/estimate?id=c312aaf9a2bf80f96e4bde4977ab6469346738de" } }, 
+                      "Ready Search POC Scope of Work Document": { "poc_cost": { "value": "2,641.40 USD", "link": "https://calculator.aws/#/estimate?id=3c41e5d5a98dc397e3e304c2aadb4542b470c755" } }, 
+                      "AI based Image Enhancement POC SOW": { "poc_cost": { "value": "2,814.34 USD", "link": "https://calculator.aws/#/estimate?id=9cf3ca493700f66dbf9e8a970e60d33fb0741d30" } }, 
+                      "AI based Image Inspection POC SOW": { "poc_cost": { "value": "3,536.40 USD", "link": "https://calculator.aws/#/estimate?id=1dadf2a40780a0a86e2844a04875d150c59902ef" } }, 
+                      "Gen AI for SOP POC SOW": { "poc_cost": { "value": "2,110.30 USD", "link": "https://calculator.aws/#/estimate?id=09e220ef1f484dfa685a7de966cefff347f37d00" } }, 
+                      "Project Scope Document": { "prod_cost": { "value": "2,993.60 USD", "link": "https://calculator.aws/#/" } }, 
+                      "Gen AI Speech To Speech": { "prod_cost": { "value": "2,124.23 USD", "link": "https://calculator.aws/#/estimate?id=b2547f927dd913323eb8683c5e69aeb585b82eb5" } }, 
+                      "PoC Scope Document": { "rows": [ { "system": "Other AWS Services", "cost": "$ 2,150", "link": "https://calculator.aws/estimate?id=other-aws-services" }, 
+                                                                { "system": "Amazon Bedrock (Claude Model)", "cost": "$ 1,000", "note": "Calculation mentioned below" }, 
+                                                                { "system": "Total", "cost": "$ 3,150" } ], 
+                                             "detailed_calculation": [ ["Number of documents", "200", "Assuming 5 interactions per document"], 
+                                                                      ["Input Tokens per document", "10,000,000", "Anthropic Claude 3 Sonnet"], 
+                                                                      ["Total Input Cost in USD", "600", ""], ["Output Tokens per document", "50,000", ""], 
+                                                                      ["Total Output Cost in USD", "150", ""], ["Total Cost in USD", "750", ""], 
+                                                                      ["Tokens for Embedding Model", "250,000,000", "Cohere English Model"], 
+                                                                      ["Total Embedding Model Cost in USD", "250", ""], 
+                                                                      ["Total Cost in USD per month", "1,000", ""] ] 
+                                            }
 
 SOW_DIAGRAM_MAP = {
     "L1 Support Bot POC SOW":
@@ -172,105 +108,50 @@ st.markdown("""
 # WORD – COST TABLE
 # =====================================================
 def add_infra_cost_table(doc, sow_type_name):
+    if sow_type_name == "PoC Scope Document":
+    add_poc_calculation_table(doc)
+
     from docx.enum.text import WD_ALIGN_PARAGRAPH
 
     cost_data = SOW_COST_TABLE_MAP.get(sow_type_name)
-    if selected_sow_name == "PoC Scope Document":
-        st.subheader("Cost Summary")
-
-        summary = cost_data.get("summary_table", [])
-
-        summary_rows = []
-    for row in summary:
-        link = row.get("link", "")
-        link_html = f"<a href='{link}' target='_blank'>Link</a>" if link else row.get("note", "")
-        summary_rows.append(
-            [row["service"], row["cost"], link_html]
-        )
-
-    st.markdown(
-        """
-        <table>
-            <tr>
-                <th>Service</th>
-                <th>Cost</th>
-                <th>Reference</th>
-            </tr>
-            {}
-        </table>
-        """.format(
-            "".join(
-                f"<tr><td>{r[0]}</td><td>{r[1]}</td><td>{r[2]}</td></tr>"
-                for r in summary_rows
-            )
-        ),
-        unsafe_allow_html=True
-    )
-
-    st.subheader("Cost Calculation Details")
-
-    detailed = cost_data.get("detailed_calculation", [])
-
-    st.markdown(
-        """
-        <table>
-            <tr>
-                <th>Particulars</th>
-                <th>Value (USD)</th>
-                <th>Remarks</th>
-            </tr>
-            {}
-        </table>
-        """.format(
-            "".join(
-                f"<tr><td>{row[0]}</td><td>{row[1]}</td><td>{row[2]}</td></tr>"
-                for row in detailed
-            )
-        ),
-        unsafe_allow_html=True
-    )
-
-
     if not cost_data:
         return
 
     table = doc.add_table(rows=1, cols=3)
     table.style = "Table Grid"
+
     hdr = table.rows[0].cells
     hdr[0].text = "System"
     hdr[1].text = "Infra Cost"
     hdr[2].text = "AWS Cost Calculator"
 
-    aws_link = "https://calculator.aws/#/"
+    # ---- GENERIC ROW HANDLING ----
+    if "rows" in cost_data:
+        for item in cost_data["rows"]:
+            r = table.add_row().cells
+            r[0].text = item["system"]
+            r[1].text = item["cost"]
+            r[2].text = item.get("link", item.get("note", ""))
 
-    if "poc_cost" in cost_data:
-        r = table.add_row().cells
-        r[0].text = "POC"
-        r[1].text = cost_data["poc_cost"]
-        r[2].text = aws_link
+    # ---- EXISTING USE CASES (UNCHANGED) ----
+    else:
+        if "poc_cost" in cost_data:
+            r = table.add_row().cells
+            r[0].text = "POC"
+            r[1].text = cost_data["poc_cost"]["value"]
+            r[2].text = cost_data["poc_cost"]["link"]
 
-    if "prod_cost" in cost_data:
-        r = table.add_row().cells
-        r[0].text = "Production"
-        r[1].text = cost_data["prod_cost"]
-        r[2].text = aws_link
-
-    if "amazon_bedrock" in cost_data:
-        r = table.add_row().cells
-        r[0].text = "Amazon Bedrock"
-        r[1].text = cost_data["amazon_bedrock"]
-        r[2].text = aws_link
-
-    if "total" in cost_data:
-        r = table.add_row().cells
-        r[0].text = "Total"
-        r[1].text = cost_data["total"]
-        r[2].text = aws_link
+        if "prod_cost" in cost_data:
+            r = table.add_row().cells
+            r[0].text = "Production"
+            r[1].text = cost_data["prod_cost"]["value"]
+            r[2].text = cost_data["prod_cost"]["link"]
 
     for row in table.rows:
         for cell in row.cells:
             for p in cell.paragraphs:
                 p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
 
 # --- CACHED UTILITIES ---
 def create_docx_logic(text_content, branding_info, sow_type_name):
@@ -282,10 +163,6 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     from docx.enum.text import WD_ALIGN_PARAGRAPH
 
     doc = Document()
-    # --- One-time render guards ---
-    architecture_rendered = False
-    cost_table_rendered = False
-
 
     # Top-left: AWS Partner Network
     p_top = doc.add_paragraph()
@@ -344,7 +221,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     date_p.add_run(branding_info["doc_date_str"]).bold = True
 
     doc.add_page_break()
-
+    
     # --- CONTENT PROCESSING ---
     style = doc.styles['Normal']
     style.font.name = 'Arial'
@@ -354,12 +231,13 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     i = 0
     in_toc_section = False
     toc_already_added = False
+    overview_started = False
 
     while i < len(lines):
         line = lines[i].strip()
-
         if not line:
-            doc.add_paragraph("")
+            if i > 0 and lines[i-1].strip():
+                doc.add_paragraph("")
             i += 1
             continue
 
@@ -367,120 +245,100 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
         clean_text = re.sub(r'^#+\s*', '', line_clean).strip()
         upper_text = clean_text.upper()
 
-        # ---------------- TOC START ----------------
-        if "1 TABLE OF CONTENTS" in upper_text:
-            if not toc_already_added:
-                doc.add_heading("1 TABLE OF CONTENTS", level=1)
-                toc_already_added = True
-                in_toc_section = True
-            i += 1
-            continue
-
-        # ---------------- TOC END ----------------
-        if in_toc_section and "2 PROJECT OVERVIEW" in upper_text:
-            in_toc_section = False
-
-        # ---------------- SECTION 4 ----------------
-        if (
-            not in_toc_section
-            and not architecture_rendered
-            and "4 SOLUTION ARCHITECTURE" in upper_text
-            and (line.startswith('#') or line.startswith('4'))
-        ):
-            architecture_rendered = True
-
+        # Trigger for Section 4: Insert Architecture Diagram
+        if "4 SOLUTION ARCHITECTURE" in upper_text and (line.startswith('#') or line.startswith('4')):
             doc.add_heading(clean_text, level=1)
-
             diagram_path = SOW_DIAGRAM_MAP.get(sow_type_name)
             if diagram_path and os.path.exists(diagram_path):
                 doc.add_paragraph("")
-                doc.add_picture(diagram_path, width=Inches(6.0))
-                cap = doc.add_paragraph(f"{sow_type_name} – Architecture Diagram")
-                cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
-
+                try:
+                    doc.add_picture(diagram_path, width=Inches(6.0))
+                    p_cap = doc.add_paragraph(f"{sow_type_name} – Architecture Diagram")
+                    p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                except:
+                    doc.add_paragraph("[Architecture Diagram - Missing or Incompatible Format]")
+                doc.add_paragraph("")
             i += 1
             continue
 
-
-
-        # ---------------- SECTION 6 ----------------
-        if (
-            not in_toc_section
-            and not cost_table_rendered
-            and "6 RESOURCES & COST ESTIMATES" in upper_text
-            and (line.startswith('#') or line.startswith('6'))
-        ):
-            cost_table_rendered = True
-
+        # Trigger for Section 6: Insert Cost Table
+        if "6 RESOURCES & COST ESTIMATES" in upper_text and (line.startswith('#') or line.startswith('6')):
             doc.add_heading(clean_text, level=1)
             add_infra_cost_table(doc, sow_type_name)
-
+            doc.add_paragraph("")
+          
             i += 1
             continue
 
 
+        if ("2 PROJECT OVERVIEW" in upper_text) and (line.startswith('#') or line.startswith('2')) and not overview_started:
+            in_toc_section = False
+            overview_started = True
+            doc.add_heading(clean_text, level=1)
+            i += 1
+            continue
 
-        # ---------------- TABLE PARSING ----------------
+        if "1 TABLE OF CONTENTS" in upper_text:
+            if not toc_already_added:
+                in_toc_section = True
+                toc_already_added = True
+                doc.add_heading("1 TABLE OF CONTENTS", level=1)
+            i += 1
+            continue
+
         if line.startswith('|') and i + 1 < len(lines) and lines[i+1].strip().startswith('|'):
             table_lines = []
             while i < len(lines) and lines[i].strip().startswith('|'):
-                table_lines.append(lines[i])
+                table_lines.append(lines[i].strip())
                 i += 1
-
-            headers = [c.strip() for c in table_lines[0].split('|') if c.strip()]
-            table = doc.add_table(rows=1, cols=len(headers))
-            table.style = "Table Grid"
-
-            for idx, h in enumerate(headers):
-                table.rows[0].cells[idx].text = h
-
-            for row in table_lines[2:]:
-                row_cells = table.add_row().cells
-                cells = [c.strip() for c in row.split('|') if c.strip()]
-                for idx, c in enumerate(cells):
-                    row_cells[idx].text = c
-
+            if len(table_lines) >= 3:
+                data_lines = [l for l in table_lines if not set(l).issubset({'|', '-', ' ', ':'})]
+                if len(data_lines) >= 2:
+                    headers = [c.strip() for c in data_lines[0].split('|') if c.strip()]
+                    table = doc.add_table(rows=1, cols=len(headers))
+                    table.style = 'Table Grid'
+                    hdr_cells = table.rows[0].cells
+                    for idx, h in enumerate(headers):
+                        hdr_cells[idx].text = h
+                    for row_str in data_lines[1:]:
+                        row_cells = table.add_row().cells
+                        r_data = [c.strip() for c in row_str.split('|') if c.strip()]
+                        for idx, c_text in enumerate(r_data):
+                            if idx < len(row_cells):
+                                row_cells[idx].text = c_text
+                doc.add_paragraph("")
             continue
 
-        # ---------------- HEADINGS ----------------
         if line.startswith('# '):
             doc.add_heading(clean_text, level=1)
-
         elif line.startswith('## '):
-            h = doc.add_heading(clean_text, level=2)
-            if in_toc_section:
-                h.paragraph_format.left_indent = Inches(0.4)
-
-        elif line.startswith('### '):
-            h = doc.add_heading(clean_text, level=3)
-            if in_toc_section:
-                h.paragraph_format.left_indent = Inches(0.8)
-
-        # ---------------- BULLETS ----------------
-        elif line.startswith('- ') or line.startswith('* '):
-            p = doc.add_paragraph(clean_text[2:], style="List Bullet")
+            p = doc.add_heading(clean_text, level=2)
             if in_toc_section:
                 p.paragraph_format.left_indent = Inches(0.4)
-
-        # ---------------- NORMAL TEXT ----------------
+        elif line.startswith('### '):
+            p = doc.add_heading(clean_text, level=3)
+            if in_toc_section:
+                p.paragraph_format.left_indent = Inches(0.8)
+        elif line.startswith('- ') or line.startswith('* '):
+            bullet_text = re.sub(r'^[-*]\s*', '', clean_text)
+            p = doc.add_paragraph(bullet_text, style='List Bullet')
+            if in_toc_section:
+                p.paragraph_format.left_indent = Inches(0.4)
         else:
             p = doc.add_paragraph(clean_text)
-
+            if in_toc_section and len(clean_text) > 3 and clean_text[0].isdigit():
+                 p.paragraph_format.left_indent = Inches(0.4)
+            
+            # Segregation bolding logic for all key sections and stakeholder sub-headers
             segregation_keywords = [
-                "PARTNER EXECUTIVE SPONSOR",
-                "CUSTOMER EXECUTIVE SPONSOR",
-                "AWS EXECUTIVE SPONSOR",
-                "PROJECT ESCALATION CONTACTS",
-                "ASSUMPTIONS",
-                "DEPENDENCIES"
+                "PARTNER EXECUTIVE SPONSOR", "CUSTOMER EXECUTIVE SPONSOR", 
+                "AWS EXECUTIVE SPONSOR", "PROJECT ESCALATION CONTACTS",
+                "DEPENDENCIES:", "ASSUMPTIONS:", "SPONSOR:", "CONTACTS:"
             ]
-
-            if any(k in upper_text for k in segregation_keywords):
+            if any(key in upper_text for key in segregation_keywords):
                 if p.runs:
                     p.runs[0].bold = True
-
         i += 1
-
             
     bio = io.BytesIO()
     doc.save(bio)
@@ -531,6 +389,13 @@ with st.sidebar:
     selected_sow_name = st.selectbox("1.1 Scope of Work Type", sow_type_options)
 
     # Sidebar architecture preview
+    st.divider()
+    st.header("🧩 Architecture Preview")
+    diagram_path_sidebar = SOW_DIAGRAM_MAP.get(selected_sow_name)
+    if diagram_path_sidebar and os.path.exists(diagram_path_sidebar):
+        st.image(diagram_path_sidebar, caption="Architecture Diagram", use_container_width=True)
+    else:
+        st.warning("No architecture diagram available.")
 
     st.divider()
     industry_options = ["Retail / E-commerce", "BFSI", "Manufacturing", "Telecom", "Healthcare", "Energy / Utilities", "Logistics", "Media", "Government", "Other (specify)"]
