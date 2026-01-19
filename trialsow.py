@@ -649,11 +649,11 @@ if "docx_data" not in st.session_state:
         )
         
         if st.session_state.docx_data:
-        st.download_button(
-        label="📥 Download Now (.docx)",
-        data=st.session_state.docx_data,
-        file_name=f"SOW_{selected_sow_name.replace(' ', '_')}.docx",
-        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        use_container_width=True
-        )
+           st.download_button(
+           label="📥 Download Now (.docx)",
+           data=st.session_state.docx_data,
+           file_name=f"SOW_{selected_sow_name.replace(' ', '_')}.docx",
+           mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+           use_container_width=True
+           )
 
