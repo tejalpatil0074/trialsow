@@ -633,8 +633,7 @@ if "docx_data" not in st.session_state:
         st.markdown('</div>', unsafe_allow_html=True)
     
     st.write("")
-    
-        if st.button("💾 Prepare Microsoft Word Document"):
+    if st.button("💾 Prepare Microsoft Word Document"):
         branding_info = {
         "sow_name": selected_sow_name,
         "customer_logo_bytes": customer_logo.getvalue() if customer_logo else None,
