@@ -471,7 +471,8 @@ if st.session_state.generated_sow:
             height=700, 
             key="sow_editor"
         )
-    
+    diagram_path_out = SOW_DIAGRAM_MAP.get(selected_sow_name)
+
     with tab_preview:
         st.markdown(f'<div class="sow-preview">', unsafe_allow_html=True)
         header_pattern = r'(?i)(^#*\s*4\s+SOLUTION ARCHITECTURE.*)'
