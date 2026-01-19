@@ -237,7 +237,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
 
         # Exit TOC when actual content starts
         if in_toc_section and "2 PROJECT OVERVIEW" in upper_text:
-        in_toc_section = False
+           in_toc_section = False
 
     # --- Section 4: Architecture Diagram ---
     if (
