@@ -634,7 +634,7 @@ if "docx_data" not in st.session_state:
     
     st.write("")
     
-    if st.button("💾 Prepare Microsoft Word Document"):
+        if st.button("💾 Prepare Microsoft Word Document"):
         branding_info = {
         "sow_name": selected_sow_name,
         "customer_logo_bytes": customer_logo.getvalue() if customer_logo else None,
@@ -642,18 +642,12 @@ if "docx_data" not in st.session_state:
     }
 
         
-        st.session_state.docx_data = create_docx_logic(
-        st.session_state.generated_sow,
-        branding_info,
-        selected_sow_name
-        )
+        docx_data = create_docx_logic(st.session_state.generated_sow, branding_info, selected_sow_name)
         
-        if st.session_state.docx_data:
-           st.download_button(
-           label="📥 Download Now (.docx)",
-           data=st.session_state.docx_data,
-           file_name=f"SOW_{selected_sow_name.replace(' ', '_')}.docx",
-           mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-           use_container_width=True
-           )
-
+        st.download_button(
+            label="📥 Download Now (.docx)", 
+            data=docx_data, 
+            file_name=f"SOW_{selected_sow_name.replace(' ', '_')}.docx", 
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", 
+            use_container_width=True
+        )
