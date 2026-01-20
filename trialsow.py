@@ -123,6 +123,40 @@ def add_hyperlink(paragraph, text, url):
     paragraph._p.append(hyperlink)
     return hyperlink
 
+def add_poc_calculation_table(doc):
+    doc.add_paragraph("The above numbers are calculated basis the following:")
+
+    table = doc.add_table(rows=1, cols=3)
+    table.style = "Table Grid"
+
+    hdr = table.rows[0].cells
+    hdr[0].text = "Particulars"
+    hdr[1].text = "Value (in Dollar)"
+    hdr[2].text = "Remarks"
+
+    data = [
+        ("Number of documents", "200", "Assuming 5 interactions for finalising each product copy"),
+        ("Input Tokens per document", "10,00,000", ""),
+        ("Input Token Cost per 1,000 Tokens", "0", "Anthropic Claude 3 Sonnet Model"),
+        ("Total Input Cost in USD", "600", ""),
+        ("Output Tokens per document", "50,000", ""),
+        ("Output Token Cost per 1,000 Tokens", "0", "Anthropic Claude 3 Sonnet Model"),
+        ("Total Output Cost in USD", "150", ""),
+        ("Total Cost in USD", "750", ""),
+        ("", "", ""),
+        ("Tokens for Embedding Model", "2,50,00,00,000", ""),
+        ("Input Cost per 1,000 Tokens", "0", "Cohere English Model"),
+        ("Total Embedding Model Cost in USD", "250", ""),
+        ("", "", ""),
+        ("Total Cost in USD per month", "1,000", "")
+    ]
+
+    for row in data:
+        cells = table.add_row().cells
+        for i, val in enumerate(row):
+            cells[i].text = val
+
+
 # WORD – COST TABLE (Section 5)
 def add_infra_cost_table(doc, sow_type_name, text_content):
     from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -164,6 +198,12 @@ def add_infra_cost_table(doc, sow_type_name, text_content):
         for cell in row.cells:
             for p in cell.paragraphs:
                 p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        # ---- PoC Scope Document extra calculation table ----
+    if sow_type_name == "PoC Scope Document":
+        doc.add_paragraph("")  # spacing
+        add_poc_calculation_table(doc)
+
 
 # --- CACHED UTILITIES ---
 def create_docx_logic(text_content, branding_info, sow_type_name):
