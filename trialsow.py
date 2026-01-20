@@ -17,7 +17,7 @@ AWS_ADV_LOGO = os.path.join(ASSETS_DIR, "aws advanced logo1.jpg")
 
 # Mapped Infra Costs
 SOW_COST_TABLE_MAP = { 
-    "L1 Support Bot POC SOW": { "poc_cost": "3,536.40 USD" }, https://github.com/tejalpatil0074/trialsow/edit/main/trialsow.py
+    "L1 Support Bot POC SOW": { "poc_cost": "3,536.40 USD" }, 
     "Beauty Advisor POC SOW": { 
         "poc_cost": "4,525.66 USD + 200 USD (Amazon Bedrock Cost) = 4,725.66", 
         "prod_cost": "4,525.66 USD + 1,175.82 USD (Amazon Bedrock Cost) = 5,701.48" 
