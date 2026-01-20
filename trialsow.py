@@ -454,6 +454,25 @@ with st.sidebar:
     
     st.divider()
     st.header("📋 1. Project Intake")
+    # --- 1.2 Engagement Type ---
+    st.subheader("1.2 Engagement Type")
+
+    engagement_type = st.radio(
+        "Select engagement type:",
+        [
+            "Proof of Concept (PoC)",
+            "Pilot",
+            "MVP",
+            "Production Rollout",
+            "Assessment / Discovery",
+            "Support"
+        ]
+    )
+
+    st.caption(
+        "📌 Drives: depth of scope, success criteria strictness, and cost modeling assumptions"
+    )
+
     sow_type_options = list(SOW_COST_TABLE_MAP.keys())
     selected_sow_name = st.selectbox("1.1 Scope of Work Type", sow_type_options)
 
@@ -516,6 +535,10 @@ if st.button("✨ Generate SOW Document", type="primary", use_container_width=Tr
 
             prompt_text = f"""
             Generate a COMPLETE formal enterprise SOW for {selected_sow_name} in {final_industry}.
+
+            ENGAGEMENT CONTEXT:
+            - Engagement Type: {st.session_state.engagement_type}
+            - Adjust scope depth, success criteria strictness, assumptions, and cost modeling based on the engagement type.
             
             STRICT SECTION FLOW (OUTPUT EACH SECTION ONCE, NO REPETITION):
             1 TABLE OF CONTENTS
@@ -585,6 +608,11 @@ if st.session_state.generated_sow:
         else:
             st.markdown(preview_content, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
+
+    if "engagement_type" not in st.session_state:
+    st.session_state.engagement_type = "Proof of Concept (PoC)"
+
+    
 
     if st.button("💾 Prepare Microsoft Word Document"):
         branding_info = {
