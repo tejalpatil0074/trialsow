@@ -471,20 +471,20 @@ with st.sidebar:
     
     st.divider()
     st.header(" 1. Project Intake")
-   st.subheader("1.2 Engagement Type")
+    st.subheader("1.2 Engagement Type")
 
-   st.radio(
-        "Select engagement type:",
-        [
-            "Proof of Concept (PoC)",
-            "Pilot",
-            "MVP",
-            "Production Rollout",
-            "Assessment / Discovery",
-            "Support"
-        ],
-        key="engagement_type"
-    )
+    st.radio(
+         "Select engagement type:",
+         [
+             "Proof of Concept (PoC)",
+             "Pilot",
+             "MVP",
+             "Production Rollout",
+             "Assessment / Discovery",
+             "Support"
+         ],
+         key="engagement_type"
+     )
 
 
 
