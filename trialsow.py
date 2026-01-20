@@ -467,24 +467,6 @@ with st.sidebar:
         ]
     )
 
-    # --- 3.1 Customer Dependencies ---
-    st.subheader("3.1 Customer Dependencies")
-
-    customer_dependencies = st.multiselect(
-        "Select all that apply:",
-        [
-            "Sample data availability",
-            "Historical data availability",
-            "Design / business guidelines finalized",
-            "API access provided",
-            "User access to AWS account",
-            "SME availability for validation",
-            "Network / VPC access",
-            "Security approvals"
-        ],
-        key="customer_dependencies"
-    )
-
 
     sow_type_options = list(SOW_COST_TABLE_MAP.keys())
     selected_sow_name = st.selectbox("1.1 Scope of Work Type", sow_type_options)
@@ -523,6 +505,73 @@ with col_team2:
     st.session_state.stakeholders["Customer"] = st.data_editor(st.session_state.stakeholders["Customer"], num_rows="dynamic", use_container_width=True, key="ed_customer")
     st.markdown('<div class="stakeholder-header">Project Escalation Contacts</div>', unsafe_allow_html=True)
     st.session_state.stakeholders["Escalation"] = st.data_editor(st.session_state.stakeholders["Escalation"], num_rows="dynamic", use_container_width=True, key="ed_escalation")
+
+# --- 3.1 Customer Dependencies ---
+st.divider()
+st.header("3.1 Customer Dependencies")
+
+dependencies = st.multiselect(
+    "Select all that apply:",
+    [
+        "Sample data availability",
+        "Historical data availability",
+        "Design / business guidelines finalized",
+        "API access provided",
+        "User access to AWS account",
+        "SME availability for validation",
+        "Network / VPC access",
+        "Security approvals"
+    ],
+    key="customer_dependencies"
+)
+
+st.session_state.customer_dependencies = dependencies
+
+# --- 3.2 Data Characteristics ---
+st.divider()
+st.header("3.2 Data Characteristics")
+
+data_types = st.multiselect(
+    "What type of data is involved?",
+    [
+        "Images",
+        "Text",
+        "PDFs / Documents",
+        "Audio",
+        "Video",
+        "Structured tables",
+        "APIs / Streams"
+    ],
+    key="data_types"
+)
+
+data_characteristics = {}
+
+if "Images" in data_types:
+    st.subheader("Images")
+    data_characteristics["Images"] = {
+        "avg_size_mb": st.text_input("Average image size (MB)", key="img_size"),
+        "formats": st.text_input("Formats (JPEG, PNG, etc.)", key="img_formats"),
+        "volume": st.text_input("Approx volume (per day / total)", key="img_volume"),
+    }
+
+if "Text" in data_types:
+    st.subheader("Text")
+    data_characteristics["Text"] = {
+        "source": st.text_input("Source (chat, logs, docs)", key="txt_source"),
+        "volume": st.text_input("Approx volume", key="txt_volume"),
+    }
+
+if "PDFs / Documents" in data_types:
+    st.subheader("PDFs / Documents")
+    data_characteristics["Documents"] = {
+        "avg_pages": st.text_input("Average pages per document", key="pdf_pages"),
+        "volume": st.text_input("Approx volume", key="pdf_volume"),
+    }
+
+st.session_state.data_characteristics = data_characteristics
+
+
 
 # --- GENERATION ---
 if st.button("✨ Generate SOW Document", type="primary", use_container_width=True):
@@ -567,6 +616,7 @@ if st.button("✨ Generate SOW Document", type="primary", use_container_width=Tr
                   ### Project Escalation Contacts
                   {get_md(st.session_state.stakeholders["Escalation"])}
               2.3 ASSUMPTIONS & DEPENDENCIES
+
               Dependencies:
               The following customer dependencies have been identified:
               {", ".join(st.session_state.customer_dependencies) if st.session_state.customer_dependencies else "No explicit dependencies specified."}
@@ -578,9 +628,33 @@ if st.button("✨ Generate SOW Document", type="primary", use_container_width=Tr
 
               Assumptions:
               - Generate 2–5 assumptions aligned to the engagement type.
+.
 
               2.4 Project Success Criteria
             3 SCOPE OF WORK - TECHNICAL PROJECT PLAN
+
+            3.1 CUSTOMER DEPENDENCIES
+            Selected by user:
+            {", ".join(st.session_state.customer_dependencies) if st.session_state.customer_dependencies else "No explicit customer dependencies specified."}
+
+            Instruction:
+            - Expand each selected dependency into a formal enterprise dependency statement.
+            - Clearly mention customer responsibility and prerequisite nature.
+
+            3.2 DATA CHARACTERISTICS
+            Selected data types:
+            {", ".join(st.session_state.data_types) if st.session_state.data_types else "No data types specified."}
+
+            Detailed inputs:
+            {st.session_state.data_characteristics if st.session_state.data_characteristics else "No detailed data characteristics provided."}
+
+            Instruction:
+            - Use this information to influence architecture decisions.
+            - Use this to justify Amazon Bedrock / ML service selection.
+            - Reflect data volume, format, and frequency assumptions in cost rationale.
+
+            3.3 TECHNICAL IMPLEMENTATION PLAN
+
             4 SOLUTION ARCHITECTURE / ARCHITECTURAL DIAGRAM
             5 COST ESTIMATION TABLE
             6 RESOURCES & COST ESTIMATES
@@ -633,11 +707,14 @@ if st.session_state.generated_sow:
             st.markdown(preview_content, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-    if "engagement_type" not in st.session_state:
-        st.session_state.engagement_type = "Proof of Concept (PoC)"
-
     if "customer_dependencies" not in st.session_state:
         st.session_state.customer_dependencies = []
+
+    if "data_types" not in st.session_state:
+        st.session_state.data_types = []
+
+    if "data_characteristics" not in st.session_state:
+        st.session_state.data_characteristics = {}
 
 
     
