@@ -17,7 +17,7 @@ AWS_ADV_LOGO = os.path.join(ASSETS_DIR, "aws advanced logo1.jpg")
 
 # Mapped Infra Costs
 SOW_COST_TABLE_MAP = { 
-    "L1 Support Bot POC SOW": { "poc_cost": "3,536.40 USD" }, 
+    "L1 Support Bot POC SOW": { "poc_cost": "3,536.40 USD" }, https://github.com/tejalpatil0074/trialsow/edit/main/trialsow.py
     "Beauty Advisor POC SOW": { 
         "poc_cost": "4,525.66 USD + 200 USD (Amazon Bedrock Cost) = 4,725.66", 
         "prod_cost": "4,525.66 USD + 1,175.82 USD (Amazon Bedrock Cost) = 5,701.48" 
@@ -425,6 +425,22 @@ def call_gemini_with_retry(api_key, payload):
     return None, "The model is currently overloaded after multiple retries. Please try again in a few moments."
 
 # --- INITIALIZATION ---
+# --- SESSION STATE INITIALIZATION ---
+if "customer_dependencies" not in st.session_state:
+    st.session_state.customer_dependencies = []
+
+if "data_types" not in st.session_state:
+    st.session_state.data_types = []
+
+if "data_characteristics" not in st.session_state:
+    st.session_state.data_characteristics = {}
+
+if "data_types" not in st.session_state:
+    st.session_state.data_types = []
+
+
+
+
 if 'generated_sow' not in st.session_state:
     st.session_state.generated_sow = ""
 
@@ -524,8 +540,6 @@ dependencies = st.multiselect(
     ],
     key="customer_dependencies"
 )
-
-st.session_state.customer_dependencies = dependencies
 
 # --- 3.2 Data Characteristics ---
 st.divider()
