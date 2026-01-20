@@ -467,6 +467,25 @@ with st.sidebar:
         ]
     )
 
+    # --- 3.1 Customer Dependencies ---
+    st.subheader("3.1 Customer Dependencies")
+
+    customer_dependencies = st.multiselect(
+        "Select all that apply:",
+        [
+            "Sample data availability",
+            "Historical data availability",
+            "Design / business guidelines finalized",
+            "API access provided",
+            "User access to AWS account",
+            "SME availability for validation",
+            "Network / VPC access",
+            "Security approvals"
+        ],
+        key="customer_dependencies"
+    )
+
+
     sow_type_options = list(SOW_COST_TABLE_MAP.keys())
     selected_sow_name = st.selectbox("1.1 Scope of Work Type", sow_type_options)
 
@@ -548,7 +567,18 @@ if st.button("✨ Generate SOW Document", type="primary", use_container_width=Tr
                   ### Project Escalation Contacts
                   {get_md(st.session_state.stakeholders["Escalation"])}
               2.3 ASSUMPTIONS & DEPENDENCIES
-                  - Provide subheadings 'Assumptions' and 'Dependencies', each with 2-5 distinct bullet points.
+              Dependencies:
+              The following customer dependencies have been identified:
+              {", ".join(st.session_state.customer_dependencies) if st.session_state.customer_dependencies else "No explicit dependencies specified."}
+
+              Instructions:
+              - Expand each selected dependency into a formal, professional dependency statement.
+              - Do NOT repeat the checkbox text verbatim.
+              - Group logically if required.
+
+              Assumptions:
+              - Generate 2–5 assumptions aligned to the engagement type.
+
               2.4 Project Success Criteria
             3 SCOPE OF WORK - TECHNICAL PROJECT PLAN
             4 SOLUTION ARCHITECTURE / ARCHITECTURAL DIAGRAM
@@ -605,6 +635,10 @@ if st.session_state.generated_sow:
 
     if "engagement_type" not in st.session_state:
         st.session_state.engagement_type = "Proof of Concept (PoC)"
+
+    if "customer_dependencies" not in st.session_state:
+        st.session_state.customer_dependencies = []
+
 
     
 
