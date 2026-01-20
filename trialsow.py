@@ -445,15 +445,13 @@ def clear_sow():
 
 # --- SIDEBAR: PROJECT INTAKE ---
 with st.sidebar:
-    st.image("https://img.icons8.com/fluency/96/artificial-intelligence.png", width=60)
     st.title("SOW Architect")
-    st.caption("Enterprise POC/MVP Engine")
     
-    with st.expander("🔑 API Key", expanded=False):
+    with st.expander("API Key", expanded=False):
         api_key = st.text_input("Gemini API Key", type="password")
     
     st.divider()
-    st.header("📋 1. Project Intake")
+    st.header(" 1. Project Intake")
     # --- 1.2 Engagement Type ---
     st.subheader("1.2 Engagement Type")
 
@@ -469,10 +467,6 @@ with st.sidebar:
         ]
     )
 
-    st.caption(
-        "📌 Drives: depth of scope, success criteria strictness, and cost modeling assumptions"
-    )
-
     sow_type_options = list(SOW_COST_TABLE_MAP.keys())
     selected_sow_name = st.selectbox("1.1 Scope of Work Type", sow_type_options)
 
@@ -482,23 +476,23 @@ with st.sidebar:
     final_industry = st.text_input("Specify Industry", placeholder="Enter industry...") if industry_type == "Other (specify)" else industry_type
     duration = st.text_input("Timeline / Duration", "4 Weeks")
     
-    if st.button("🗑️ Reset All Fields", on_click=clear_sow, use_container_width=True):
+    if st.button(" Reset All Fields", on_click=clear_sow, use_container_width=True):
         st.rerun()
 
 # --- MAIN UI ---
-st.title("🚀 GenAI Scope of Work Architect")
-st.header("📸 Cover Page Branding")
+st.title(" GenAI Scope of Work Architect")
+st.header(" Cover Page Branding")
 customer_logo = st.file_uploader("Upload Customer Logo (Optional)", type=["png", "jpg", "jpeg"])
 doc_date = st.date_input("Document Date", date.today())
 st.divider()
 
 st.header("2. Objectives & Stakeholders")
-st.subheader("🎯 2.1 Objective")
+st.subheader(" 2.1 Objective")
 objective = st.text_area("Define the core business objective:", placeholder="e.g., Development of a Gen AI based WIMO Bot...", height=120)
 outcomes = st.multiselect("Select success metrics:", ["Reduced Response Time", "Automated SOP Mapping", "Cost Savings", "Higher Accuracy", "Metadata Richness", "Revenue Growth", "Security Compliance", "Scalability", "Integration Feasibility"], default=["Higher Accuracy", "Cost Savings"])
 st.divider()
 
-st.subheader("👥 2.2 Project Sponsor(s) / Stakeholder(s) / Project Team")
+st.subheader(" 2.2 Project Sponsor(s) / Stakeholder(s) / Project Team")
 col_team1, col_team2 = st.columns(2)
 with col_team1:
     st.markdown('<div class="stakeholder-header">Partner Executive Sponsor</div>', unsafe_allow_html=True)
