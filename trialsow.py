@@ -610,7 +610,7 @@ if st.session_state.generated_sow:
         st.markdown('</div>', unsafe_allow_html=True)
 
     if "engagement_type" not in st.session_state:
-    st.session_state.engagement_type = "Proof of Concept (PoC)"
+        st.session_state.engagement_type = "Proof of Concept (PoC)"
 
     
 
