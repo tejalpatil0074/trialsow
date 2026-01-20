@@ -426,6 +426,9 @@ def call_gemini_with_retry(api_key, payload):
 
 # --- INITIALIZATION ---
 # --- SESSION STATE INITIALIZATION ---
+if "engagement_type" not in st.session_state:
+    st.session_state.engagement_type = "Proof of Concept (PoC)"
+
 if "customer_dependencies" not in st.session_state:
     st.session_state.customer_dependencies = []
 
@@ -468,10 +471,9 @@ with st.sidebar:
     
     st.divider()
     st.header(" 1. Project Intake")
-    # --- 1.2 Engagement Type ---
-    st.subheader("1.2 Engagement Type")
+   st.subheader("1.2 Engagement Type")
 
-    engagement_type = st.radio(
+   st.radio(
         "Select engagement type:",
         [
             "Proof of Concept (PoC)",
@@ -480,8 +482,10 @@ with st.sidebar:
             "Production Rollout",
             "Assessment / Discovery",
             "Support"
-        ]
+        ],
+        key="engagement_type"
     )
+
 
 
     sow_type_options = list(SOW_COST_TABLE_MAP.keys())
