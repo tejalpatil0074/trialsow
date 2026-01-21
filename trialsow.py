@@ -429,6 +429,9 @@ def call_gemini_with_retry(api_key, payload):
 if "engagement_type" not in st.session_state:
     st.session_state.engagement_type = "Proof of Concept (PoC)"
 
+if "success_dimensions" not in st.session_state:
+    st.session_state.success_dimensions = []
+
 if "customer_dependencies" not in st.session_state:
     st.session_state.customer_dependencies = []
 
