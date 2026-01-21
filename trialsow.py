@@ -441,6 +441,13 @@ if "data_characteristics" not in st.session_state:
 if "data_types" not in st.session_state:
     st.session_state.data_types = []
 
+if "key_assumptions" not in st.session_state:
+    st.session_state.key_assumptions = []
+
+if "other_assumptions" not in st.session_state:
+    st.session_state.other_assumptions = ""
+
+
 
 
 
@@ -565,6 +572,33 @@ data_types = st.multiselect(
 
 data_characteristics = {}
 
+st.subheader("3.3 Key Assumptions")
+
+assumption_options = [
+    "PoC only, not production-grade",
+    "Limited data volume",
+    "Rule-based logic acceptable initially",
+    "Manual review for edge cases",
+    "No real-time SLA commitments"
+]
+
+selected_assumptions = st.multiselect(
+    "Select applicable assumptions:",
+    assumption_options,
+    default=st.session_state.key_assumptions
+)
+
+other_assumption_text = st.text_area(
+    "Other assumptions (optional):",
+    value=st.session_state.other_assumptions,
+    placeholder="Enter any additional assumptions..."
+)
+
+# Store safely in session_state
+st.session_state.key_assumptions = selected_assumptions
+st.session_state.other_assumptions = other_assumption_text
+
+
 if "Images" in data_types:
     st.subheader("Images")
     data_characteristics["Images"] = {
@@ -633,20 +667,6 @@ if st.button("✨ Generate SOW Document", type="primary", use_container_width=Tr
                   {get_md(st.session_state.stakeholders["AWS"])}
                   ### Project Escalation Contacts
                   {get_md(st.session_state.stakeholders["Escalation"])}
-              2.3 ASSUMPTIONS & DEPENDENCIES
-
-              Dependencies:
-              The following customer dependencies have been identified:
-              {", ".join(st.session_state.customer_dependencies) if st.session_state.customer_dependencies else "No explicit dependencies specified."}
-
-              Instructions:
-              - Expand each selected dependency into a formal, professional dependency statement.
-              - Do NOT repeat the checkbox text verbatim.
-              - Group logically if required.
-
-              Assumptions:
-              - Generate 2–5 assumptions aligned to the engagement type.
-.
 
               2.4 Project Success Criteria
             3 SCOPE OF WORK - TECHNICAL PROJECT PLAN
@@ -671,7 +691,20 @@ if st.button("✨ Generate SOW Document", type="primary", use_container_width=Tr
             - Use this to justify Amazon Bedrock / ML service selection.
             - Reflect data volume, format, and frequency assumptions in cost rationale.
 
-            3.3 TECHNICAL IMPLEMENTATION PLAN
+            3.3 Key Assumptions:
+            Selected assumptions by user:
+            {", ".join(st.session_state.key_assumptions) if st.session_state.key_assumptions else "No predefined assumptions selected."}
+
+            Additional assumptions:
+            {st.session_state.other_assumptions if st.session_state.other_assumptions.strip() else "None provided."}
+
+            Instructions:
+            - Convert each selected assumption into a formal, professional SOW assumption.
+            - Do NOT repeat checkbox text verbatim.
+            - Align assumptions with engagement type: {st.session_state.engagement_type}
+
+
+            
 
             4 SOLUTION ARCHITECTURE / ARCHITECTURAL DIAGRAM
             5 COST ESTIMATION TABLE
