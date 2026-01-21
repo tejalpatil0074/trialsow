@@ -359,8 +359,8 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                     continue
 
                 if not rendered_sections[current_header_id]:
-                doc.add_heading(clean_text, level=1)
-                rendered_sections[current_header_id] = True
+                    doc.add_heading(clean_text, level=1)
+                    rendered_sections[current_header_id] = True
 
 
                 # Immediate content injection
