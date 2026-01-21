@@ -341,7 +341,6 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                 # Immediate content injection
                 if current_header_id == "1": in_toc_section = True
                 # Handle Section Switches (Enforcing Single Rendering)
-                if "ARCHITECTURE DIAGRAM" in upper_text or "REFER DIAGRAM" in upper_text:
 
                 if current_header_id == "6" and not architecture_rendered:
                     architecture_rendered = True
