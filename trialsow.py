@@ -220,11 +220,15 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     header_patterns = {
         "1": "1 TABLE OF CONTENTS",
         "2": "2 PROJECT OVERVIEW",
-        "3": "3 SCOPE OF WORK",
-        "4": "SOLUTION ARCHITECTURE",
-        "5": "9 COST ESTIMATION TABLE",
-        "6": "6 RESOURCES & COST ESTIMATES"
+        "3": "3 ASSUMPTIONS & DEPENDENCIES",
+        "4": "4 PROJECT SUCCESS CRITERIA",
+        "5": "5 SCOPE OF WORK",
+        "6": "6 SOLUTION ARCHITECTURE",
+        "7": "7 PERFORMANCE & SECURITY",
+        "8": "8 COST ESTIMATION",
+        "9": "9 RESOURCES & COST ESTIMATES"
     }
+
 
 
     architecture_rendered = False
@@ -347,10 +351,9 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                 rendered_sections[current_header_id] = True
 
                 # Immediate content injection
-                if current_header_id == "1": in_toc_section = True
                 # Handle Section Switches (Enforcing Single Rendering)
 
-                if current_header_id == "4" and not architecture_rendered:
+                if current_header_id == "6" and not architecture_rendered:
                     architecture_rendered = True
 
                     diagram_path = SOW_DIAGRAM_MAP.get(sow_type_name)
@@ -360,9 +363,9 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                         cap = doc.add_paragraph(f"{sow_type_name} – Architecture Diagram")
                         cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-
                     i += 1
                     continue
+
 
 
                 if current_header_id == "5" or "COST ESTIMATION" in upper_text:
