@@ -453,6 +453,31 @@ if "other_assumptions" not in st.session_state:
 if "user_validation_required" not in st.session_state:
     st.session_state.user_validation_required = "Yes – customer validation required"
 
+if "compute_orchestration" not in st.session_state:
+    st.session_state.compute_orchestration = "AWS Lambda + Step Functions"
+
+if "genai_services" not in st.session_state:
+    st.session_state.genai_services = ["Amazon Bedrock (LLM inference)"]
+
+if "storage_services" not in st.session_state:
+    st.session_state.storage_services = ["Amazon S3"]
+
+if "ui_layer" not in st.session_state:
+    st.session_state.ui_layer = "Streamlit on S3"
+
+if "performance_expectation" not in st.session_state:
+    st.session_state.performance_expectation = "Batch"
+
+if "security_compliance" not in st.session_state:
+    st.session_state.security_compliance = []
+
+if "cost_ownership" not in st.session_state:
+    st.session_state.cost_ownership = "Funded by Customer"
+
+
+
+
+
 
 
 
@@ -502,11 +527,11 @@ with st.sidebar:
 
 
     sow_type_options = list(SOW_COST_TABLE_MAP.keys())
-    selected_sow_name = st.selectbox("1.1 Scope of Work Type", sow_type_options)
+    selected_sow_name = st.selectbox("Scope of Work Type", sow_type_options)
 
     st.divider()
     industry_options = ["Retail / E-commerce", "BFSI", "Manufacturing", "Telecom", "Healthcare", "Energy / Utilities", "Logistics", "Media", "Government", "Other (specify)"]
-    industry_type = st.selectbox("1.2 Industry / Domain", industry_options)
+    industry_type = st.selectbox("Industry / Domain", industry_options)
     final_industry = st.text_input("Specify Industry", placeholder="Enter industry...") if industry_type == "Other (specify)" else industry_type
     duration = st.text_input("Timeline / Duration", "4 Weeks")
     
@@ -523,7 +548,7 @@ st.divider()
 st.header("2. Objectives & Stakeholders")
 st.subheader(" 2.1 Objective")
 objective = st.text_area("Define the core business objective:", placeholder="e.g., Development of a Gen AI based WIMO Bot...", height=120)
-outcomes = st.multiselect("Select success metrics:", ["Reduce manual effort", "Improve accuracy / quality", "Faster turnaround time", "Cost reduction", "Revenue uplift", "Compliance improvement", "Better customer experience", "Scalability validation", "Integration Feasibility"])
+outcomes = st.multiselect("Key Outcomes:", ["Reduce manual effort", "Improve accuracy / quality", "Faster turnaround time", "Cost reduction", "Revenue uplift", "Compliance improvement", "Better customer experience", "Scalability validation", "Integration Feasibility"])
 st.divider()
 
 st.subheader(" 2.3 Project Sponsor(s) / Stakeholder(s) / Project Team")
@@ -635,6 +660,128 @@ st.radio(
     key="user_validation_required"
 )
 
+st.subheader("6.1 Compute & Orchestration")
+
+st.radio(
+    "Select compute & orchestration approach:",
+    [
+        "AWS Lambda",
+        "Step Functions",
+        "AWS Lambda + Step Functions",
+        "ECS / EKS (future)",
+        "Hybrid"
+    ],
+    key="compute_orchestration"
+)
+
+st.subheader("6.2 GenAI / ML Services")
+
+st.multiselect(
+    "Select GenAI / ML services to be used:",
+    [
+        "Amazon Bedrock (LLM inference)",
+        "SageMaker (custom models)",
+        "Rekognition",
+        "Textract",
+        "Comprehend",
+        "Transcribe",
+        "Translate"
+    ],
+    default=st.session_state.genai_services,
+    key="genai_services"
+)
+
+st.subheader("6.3 Storage & Search")
+
+st.multiselect(
+    "Select storage and search services:",
+    [
+        "Amazon S3",
+        "DynamoDB",
+        "OpenSearch",
+        "RDS",
+        "Vector DB (OpenSearch / Aurora PG)"
+    ],
+    default=st.session_state.storage_services,
+    key="storage_services"
+)
+
+st.subheader("6.4 UI Layer")
+
+st.radio(
+    "Select UI deployment option:",
+    [
+        "Streamlit on S3",
+        "CloudFront + Static UI",
+        "Internal demo only",
+        "No UI (API only)"
+    ],
+    index=[
+        "Streamlit on S3",
+        "CloudFront + Static UI",
+        "Internal demo only",
+        "No UI (API only)"
+    ].index(st.session_state.ui_layer),
+    key="ui_layer"
+)
+
+st.subheader("7.1 Performance Expectations")
+
+st.selectbox(
+    "Select performance expectation:",
+    [
+        "Batch",
+        "Near real-time",
+        "Real-time"
+    ],
+    index=[
+        "Batch",
+        "Near real-time",
+        "Real-time"
+    ].index(st.session_state.performance_expectation),
+    key="performance_expectation"
+)
+
+st.subheader("7.2 Security & Compliance")
+
+st.multiselect(
+    "Select applicable security and compliance requirements:",
+    [
+        "IAM-based access",
+        "Encryption at rest",
+        "Encryption in transit",
+        "VPC deployment",
+        "Audit logging",
+        "Compliance alignment (RBI, SOC2, etc.)"
+    ],
+    default=st.session_state.security_compliance,
+    key="security_compliance"
+)
+
+st.subheader("9.2 Cost Ownership")
+
+st.radio(
+    "Select cost ownership model:",
+    [
+        "Funded by AWS",
+        "Funded by Partner",
+        "Funded by Customer",
+        "Shared"
+    ],
+    index=[
+        "Funded by AWS",
+        "Funded by Partner",
+        "Funded by Customer",
+        "Shared"
+    ].index(st.session_state.cost_ownership),
+    key="cost_ownership"
+)
+
+
+
+
+
+
 
 
 
@@ -709,8 +856,6 @@ if st.button("✨ Generate SOW Document", type="primary", use_container_width=Tr
                   {get_md(st.session_state.stakeholders["Escalation"])}
 
               2.4 Project Success Criteria
-            3 SCOPE OF WORK - TECHNICAL PROJECT PLAN
-
             3.1 CUSTOMER DEPENDENCIES
             Selected by user:
             {", ".join(st.session_state.customer_dependencies) if st.session_state.customer_dependencies else "No explicit customer dependencies specified."}
@@ -767,14 +912,83 @@ if st.button("✨ Generate SOW Document", type="primary", use_container_width=Tr
             - If customer validation is required, clearly state customer responsibilities and sign-off expectations.
             - If internal validation is sufficient, specify internal review and acceptance criteria.
             - Align validation approach with engagement type: {st.session_state.engagement_type}.
-
-
-
-
             
+            5 SCOPE OF WORK - TECHNICAL PROJECT PLAN
+            
+            6 SOLUTION ARCHITECTURE / ARCHITECTURAL DIAGRAM
 
-            4 SOLUTION ARCHITECTURE / ARCHITECTURAL DIAGRAM
-            5 COST ESTIMATION TABLE
+            6.1 Compute & Orchestration
+
+            Selected compute approach:
+            {st.session_state.compute_orchestration}
+
+            Instructions:
+            - Reflect this choice in the solution architecture narrative.
+            - If ECS / EKS is selected, mention it as a future-state scalability option.
+            - Align compute choice with engagement type: {st.session_state.engagement_type}.
+
+            6.2 GenAI / ML Services
+
+            Selected services:
+            {", ".join(st.session_state.genai_services) if st.session_state.genai_services else "None selected"}
+
+            Instructions:
+            - Justify each selected service in the architecture.
+            - Explicitly explain why Amazon Bedrock is chosen if selected.
+            - Use selected services to influence pricing assumptions.
+            - Align services with engagement type: {st.session_state.engagement_type}.
+
+            6.3 Storage & Search
+
+            Selected services:
+            {", ".join(st.session_state.storage_services) if st.session_state.storage_services else "None selected"}
+
+            Instructions:
+            - Justify each selected storage or search service.
+            - Clearly explain data flow between GenAI services and storage.
+            - If Vector DB is selected, explain embedding storage and retrieval.
+            - Reflect storage choices in cost and scalability considerations.
+
+            6.4 UI Layer
+
+            Selected UI approach:
+            {st.session_state.ui_layer}
+
+            Instructions:
+            - Explain why this UI option is appropriate for the engagement type.
+            - Mention hosting, access control, and demo expectations.
+            - If "No UI (API only)" is selected, explicitly state API-only consumption.
+            - Align UI choice with security and scalability assumptions.
+
+            7 PERFORMANCE & SECURITY
+
+            7.1 Performance Expectations:
+            {st.session_state.performance_expectation}
+
+            Instructions:
+            - Explain processing model (batch vs real-time).
+            - Align performance with architecture and service choices.
+            - Mention latency expectations clearly.
+
+            7.2 Security & Compliance:
+            {", ".join(st.session_state.security_compliance) if st.session_state.security_compliance else "Standard AWS security best practices"}
+
+            Instructions:
+            - Expand selected items into formal enterprise security controls.
+            - Clearly mention customer and partner responsibilities.
+            - If compliance standards are selected, reflect governance alignment.
+
+            9 COST ESTIMATION TABLE
+
+            9.2 Cost Ownership:
+            {st.session_state.cost_ownership}
+
+            Instructions:
+            - Clearly state who bears infrastructure and GenAI service costs.
+            - Reflect this ownership consistently in cost assumptions.
+            - If "Shared", clearly explain cost split responsibility.
+
+
             6 RESOURCES & COST ESTIMATES
 
             RULES:
