@@ -216,6 +216,17 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
 
     doc = Document()
 
+    # ---- RIGID HEADER DEFINITIONS (CRITICAL) ----
+    header_patterns = {
+        "1": "1 TABLE OF CONTENTS",
+        "2": "2 PROJECT OVERVIEW",
+        "3": "3 SCOPE OF WORK",
+        "4": "SOLUTION ARCHITECTURE",
+        "5": "9 COST ESTIMATION TABLE",
+        "6": "6 RESOURCES & COST ESTIMATES"
+    }
+
+
     architecture_rendered = False
 
     
