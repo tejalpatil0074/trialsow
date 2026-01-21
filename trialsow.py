@@ -286,10 +286,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     content_started = False
 
     # Define Header Rigid Flow
-    header_patterns = {
-        str(i+1): MASTER_SOW_STRUCTURE[i]
-        for i in range(len(MASTER_SOW_STRUCTURE))
-    }
+   
 
 
 
