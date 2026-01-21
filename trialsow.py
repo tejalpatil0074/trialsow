@@ -354,7 +354,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                     i += 1
                     continue
 
-                if "ARCHITECTURE DIAGRAM" in upper_text or "REFER DIAGRAM" in upper_text:
+            if "ARCHITECTURE DIAGRAM" in upper_text or "REFER DIAGRAM" in upper_text:
             i += 1
             continue
 
