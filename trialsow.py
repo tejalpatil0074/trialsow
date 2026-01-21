@@ -355,8 +355,8 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                     continue
 
                 if "ARCHITECTURE DIAGRAM" in upper_text or "REFER DIAGRAM" in upper_text:
-                i += 1
-                continue
+            i += 1
+            continue
 
 
                 if current_header_id == "5" or "COST ESTIMATION" in upper_text:
