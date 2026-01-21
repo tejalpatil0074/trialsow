@@ -203,7 +203,10 @@ def add_infra_cost_table(doc, sow_type_name, text_content):
     if sow_type_name == "PoC Scope Document":
         doc.add_paragraph("")  # spacing
         add_poc_calculation_table(doc)
+        
 
+
+        
 
 # --- CACHED UTILITIES ---
 def create_docx_logic(text_content, branding_info, sow_type_name):
@@ -212,6 +215,9 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     from docx.enum.text import WD_ALIGN_PARAGRAPH
 
     doc = Document()
+
+    architecture_rendered = False
+
     
     # State tracking to ensure rigid flow and prevent duplicates
     rendered_sections = {
@@ -284,7 +290,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
         "1": "1 TABLE OF CONTENTS",
         "2": "2 PROJECT OVERVIEW",
         "3": "3 SCOPE OF WORK",
-        "4": "4 SOLUTION ARCHITECTURE",
+        "4": "SOLUTION ARCHITECTURE",
         "5": "5 COST ESTIMATION TABLE",
         "6": "6 RESOURCES & COST ESTIMATES"
     }
@@ -335,15 +341,29 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                 
                 # Immediate content injection
                 if current_header_id == "1": in_toc_section = True
-                if current_header_id == "4":
+                # Handle Section Switches (Enforcing Single Rendering)
+                if (
+                    not in_toc_section
+                    and "SOLUTION ARCHITECTURE" in upper_text
+                    and not architecture_rendered
+                ):
+                    architecture_rendered = True
+
+                    doc.add_heading(clean_text, level=1)
+
                     diagram_path = SOW_DIAGRAM_MAP.get(sow_type_name)
                     if diagram_path and os.path.exists(diagram_path):
                         doc.add_paragraph("")
                         doc.add_picture(diagram_path, width=Inches(6.0))
                         cap = doc.add_paragraph(f"{sow_type_name} – Architecture Diagram")
                         cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                if current_header_id == "5":
+
+                    i += 1
+                    continue
+
+                if current_header_id == "5" or "COST ESTIMATION" in upper_text:
                     add_infra_cost_table(doc, sow_type_name, text_content)
+
             
             i += 1
             continue
@@ -1026,7 +1046,8 @@ if st.session_state.generated_sow:
             calc_url_p = CALCULATOR_LINKS["Beauty Advisor Production"]
         preview_content = st.session_state.generated_sow.replace("Estimate", f'<a href="{calc_url_p}" target="_blank" style="color:#3b82f6; text-decoration: underline;">Estimate</a>')
         
-        header_pattern = r'(?i)(^#*\s*4\s+SOLUTION ARCHITECTURE.*)'
+        header_pattern = r'(?i)(^#*\s*\d+\s+SOLUTION ARCHITECTURE.*)'
+
         match = re.search(header_pattern, preview_content, re.MULTILINE)
         if match:
             start, end = match.span()
