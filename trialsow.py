@@ -287,13 +287,12 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
 
     # Define Header Rigid Flow
     header_patterns = {
-        "1": "1 TABLE OF CONTENTS",
-        "2": "2 PROJECT OVERVIEW",
-        "3": "3 SCOPE OF WORK",
-        "4": "SOLUTION ARCHITECTURE",
-        "5": "5 COST ESTIMATION TABLE",
-        "6": "6 RESOURCES & COST ESTIMATES"
+        str(i+1): MASTER_SOW_STRUCTURE[i]
+        for i in range(len(MASTER_SOW_STRUCTURE))
     }
+
+
+
 
     while i < len(lines):
         line = lines[i].strip()
@@ -342,14 +341,8 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                 # Immediate content injection
                 if current_header_id == "1": in_toc_section = True
                 # Handle Section Switches (Enforcing Single Rendering)
-                if (
-                    not in_toc_section
-                    and "SOLUTION ARCHITECTURE" in upper_text
-                    and not architecture_rendered
-                ):
+                if current_header_id == "6" and not architecture_rendered:
                     architecture_rendered = True
-
-                    doc.add_heading(clean_text, level=1)
 
                     diagram_path = SOW_DIAGRAM_MAP.get(sow_type_name)
                     if diagram_path and os.path.exists(diagram_path):
@@ -360,6 +353,11 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
 
                     i += 1
                     continue
+
+                if "ARCHITECTURE DIAGRAM" in upper_text or "REFER DIAGRAM" in upper_text:
+                i += 1
+                continue
+
 
                 if current_header_id == "5" or "COST ESTIMATION" in upper_text:
                     add_infra_cost_table(doc, sow_type_name, text_content)
@@ -857,6 +855,53 @@ if st.button("✨ Generate SOW Document", type="primary", use_container_width=Tr
             prompt_text = f"""
             Generate a COMPLETE formal enterprise SOW for {selected_sow_name} in {final_industry}.
 
+            You are given a FIXED SOW STRUCTURE.
+            You must ONLY generate CONTENT under each section.
+            DO NOT create or rename section headings.
+            DO NOT reorder sections.
+            DO NOT add new sections.
+
+            COST RULES (CRITICAL):
+            - Do NOT generate cost tables.
+            - Do NOT mention dollar values.
+            - Cost section must be narrative only.
+
+
+            STRUCTURE TEMPLATE (DO NOT MODIFY):
+
+            1 TABLE OF CONTENTS
+            (leave blank)
+
+            2 PROJECT OVERVIEW
+            2.1 OBJECTIVE
+            2.2 PROJECT TEAM
+
+            3 ASSUMPTIONS & DEPENDENCIES
+            3.1 Customer Dependencies
+            3.2 Data Characteristics
+            3.3 Key Assumptions
+
+            4 PROJECT SUCCESS CRITERIA
+            4.1 Success Dimensions
+            4.2 User Validation Requirement
+
+            5 SCOPE OF WORK - TECHNICAL PROJECT PLAN
+            (Fill detailed technical tasks)
+
+            6 SOLUTION ARCHITECTURE / ARCHITECTURAL DIAGRAM
+            (Write ONLY 3–5 bullet points. No diagram description.)
+
+            7 PERFORMANCE & SECURITY
+            7.1 Performance Expectations
+            7.2 Security & Compliance
+
+            8 COST ESTIMATION
+            (Do NOT create tables)
+
+            9 RESOURCES & COST ESTIMATES
+
+
+
             ENGAGEMENT CONTEXT:
             - Engagement Type: {st.session_state.engagement_type}
             - Adjust scope depth, success criteria strictness, assumptions, and cost modeling based on the engagement type.
@@ -998,8 +1043,6 @@ if st.button("✨ Generate SOW Document", type="primary", use_container_width=Tr
             - Clearly mention customer and partner responsibilities.
             - If compliance standards are selected, reflect governance alignment.
 
-            9 COST ESTIMATION TABLE
-
             9.2 Cost Ownership:
             {st.session_state.cost_ownership}
 
@@ -1013,17 +1056,16 @@ if st.button("✨ Generate SOW Document", type="primary", use_container_width=Tr
 
             RULES:
             - Section 4 must include ONLY: "Specifics to be discussed basis POC".
-            - Section 5 must include ONLY:
-            {dynamic_table_prompt}
             - Ensure headings (1-6) appear exactly once.
             - Start immediately with '1 TABLE OF CONTENTS'. No markdown bolding (**). No introductory fluff.
             """
-            
+
             payload = {
                 "contents": [{"parts": [{"text": prompt_text}]}],
                 "systemInstruction": {"parts": [{"text": "Solutions Architect. Follow numbering exactly. Page 1 cover, Page 2 TOC, Page 3 starts Overview. No repetitions. No introductory fluff."}]}
             }
             
+
             res, error = call_gemini_with_retry(api_key, payload)
             if res:
                 st.session_state.generated_sow = res.json()['candidates'][0]['content']['parts'][0]['text']
@@ -1051,11 +1093,16 @@ if st.session_state.generated_sow:
         match = re.search(header_pattern, preview_content, re.MULTILINE)
         if match:
             start, end = match.span()
-            st.markdown(preview_content[:end], unsafe_allow_html=True)
+            st.markdown(preview_content, unsafe_allow_html=True)
+
             diagram_path_out = SOW_DIAGRAM_MAP.get(selected_sow_name)
             if diagram_path_out and os.path.exists(diagram_path_out):
-                st.image(diagram_path_out, caption=f"{selected_sow_name} Architecture", use_container_width=True)
-            st.markdown(preview_content[end:], unsafe_allow_html=True)
+               st.image(
+                   diagram_path_out,
+                   caption=f"{selected_sow_name} – Architecture Diagram",
+                   use_container_width=True
+               )
+
         else:
             st.markdown(preview_content, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
