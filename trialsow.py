@@ -228,7 +228,8 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
         "6": "6 SOLUTION ARCHITECTURE",
         "7": "7 PERFORMANCE & SECURITY",
         "8": "8 COST ESTIMATION",
-        "9": "9 RESOURCES & COST ESTIMATES"
+        "9": "9 RESOURCES & COST ESTIMATES",
+        "10": "10 Final Outputs"
     }
 
 
@@ -515,6 +516,13 @@ if "security_compliance" not in st.session_state:
 
 if "cost_ownership" not in st.session_state:
     st.session_state.cost_ownership = "Funded by Customer"
+
+if "deliverables" not in st.session_state:
+    st.session_state.deliverables = []
+
+if "post_poc_next_steps" not in st.session_state:
+    st.session_state.post_poc_next_steps = []
+
 
 
 
@@ -819,6 +827,32 @@ st.radio(
     key="cost_ownership"
 )
 
+st.subheader("10. Final Outputs")
+
+st.markdown("### 10.1 Deliverables")
+st.session_state.deliverables = st.multiselect(
+    "Select deliverables:",
+    [
+        "PoC architecture",
+        "Working demo",
+        "SOW document",
+        "Cost estimate",
+        "Next-phase proposal"
+    ]
+)
+
+st.markdown("### 10.2 Post-PoC Next Steps")
+st.session_state.post_poc_next_steps = st.multiselect(
+    "Select post-PoC next steps:",
+    [
+        "Production proposal",
+        "Scaling roadmap",
+        "Security review",
+        "Performance optimization",
+        "Model fine-tuning"
+    ]
+)
+
 
 
 
@@ -1074,6 +1108,25 @@ if st.button("✨ Generate SOW Document", type="primary", use_container_width=Tr
             - Clearly state who bears infrastructure and GenAI service costs.
             - Reflect this ownership consistently in cost assumptions.
             - If "Shared", clearly explain cost split responsibility.
+
+            10 FINAL OUTPUTS
+
+            10.1 Deliverables
+            Selected by user:
+            {", ".join(st.session_state.deliverables) if st.session_state.deliverables else "Standard PoC deliverables"}
+
+            Instruction:
+            - Expand each deliverable into a professional outcome-oriented statement.
+            - Clearly state what the customer receives.
+
+            10.2 Post-PoC Next Steps
+            Selected by user:
+            {", ".join(st.session_state.post_poc_next_steps) if st.session_state.post_poc_next_steps else "To be mutually agreed"}
+
+            Instruction:
+            - Describe each next step as a logical progression after PoC.
+                - Align with enterprise delivery best practices.
+
 
 
             6 RESOURCES & COST ESTIMATES
