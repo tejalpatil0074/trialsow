@@ -345,12 +345,12 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
             if not rendered_sections[current_header_id]:
                 doc.add_heading(clean_text, level=1)
                 rendered_sections[current_header_id] = True
-                
+
                 # Immediate content injection
                 if current_header_id == "1": in_toc_section = True
                 # Handle Section Switches (Enforcing Single Rendering)
 
-                if current_header_id == "6" and not architecture_rendered:
+                if current_header_id == "4" and not architecture_rendered:
                     architecture_rendered = True
 
                     diagram_path = SOW_DIAGRAM_MAP.get(sow_type_name)
@@ -359,6 +359,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                         doc.add_picture(diagram_path, width=Inches(6.0))
                         cap = doc.add_paragraph(f"{sow_type_name} – Architecture Diagram")
                         cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
 
                     i += 1
                     continue
@@ -893,7 +894,7 @@ if st.button("✨ Generate SOW Document", type="primary", use_container_width=Tr
             5 SCOPE OF WORK - TECHNICAL PROJECT PLAN
             (Fill detailed technical tasks)
 
-            6 SOLUTION ARCHITECTURE / ARCHITECTURAL DIAGRAM
+            4 SOLUTION ARCHITECTURE / ARCHITECTURAL DIAGRAM
             (Write ONLY 3–5 bullet points. No diagram description.)
 
             7 PERFORMANCE & SECURITY
