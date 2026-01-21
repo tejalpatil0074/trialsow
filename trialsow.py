@@ -236,9 +236,17 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     
     # State tracking to ensure rigid flow and prevent duplicates
     rendered_sections = {
-        "1": False, "2": False, "3": False, 
-        "4": False, "5": False, "6": False
+        "1": False,  # TOC
+        "2": False,  # Project Overview
+        "3": False,  # Assumptions & Dependencies
+        "4": False,  # Project Success Criteria
+        "5": False,  # Scope of Work
+        "6": False,  # Solution Architecture
+        "7": False,  # Performance & Security
+        "8": False,  # Cost Estimation
+        "9": False   # Resources & Cost Estimates
     }
+
 
     # --- PAGE 1: COVER PAGE ---
     p_top = doc.add_paragraph()
@@ -345,10 +353,15 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                 in_toc_section = False
                 doc.add_page_break()
             
-            # Render header exactly once
-            if not rendered_sections[current_header_id]:
+            if current_header_id:
+                if current_header_id not in rendered_sections:
+                    i += 1
+                    continue
+
+                if not rendered_sections[current_header_id]:
                 doc.add_heading(clean_text, level=1)
                 rendered_sections[current_header_id] = True
+
 
                 # Immediate content injection
                 # Handle Section Switches (Enforcing Single Rendering)
