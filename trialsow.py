@@ -447,6 +447,9 @@ if "key_assumptions" not in st.session_state:
 if "other_assumptions" not in st.session_state:
     st.session_state.other_assumptions = ""
 
+if "user_validation_required" not in st.session_state:
+    st.session_state.user_validation_required = "Yes – customer validation required"
+
 
 
 
@@ -517,10 +520,10 @@ st.divider()
 st.header("2. Objectives & Stakeholders")
 st.subheader(" 2.1 Objective")
 objective = st.text_area("Define the core business objective:", placeholder="e.g., Development of a Gen AI based WIMO Bot...", height=120)
-outcomes = st.multiselect("Select success metrics:", ["Reduced Response Time", "Automated SOP Mapping", "Cost Savings", "Higher Accuracy", "Metadata Richness", "Revenue Growth", "Security Compliance", "Scalability", "Integration Feasibility"], default=["Higher Accuracy", "Cost Savings"])
+outcomes = st.multiselect("Select success metrics:", ["Reduce manual effort", "Improve accuracy / quality", "Faster turnaround time", "Cost reduction", "Revenue uplift", "Compliance improvement", "Better customer experience", "Scalability validation", "Integration Feasibility"])
 st.divider()
 
-st.subheader(" 2.2 Project Sponsor(s) / Stakeholder(s) / Project Team")
+st.subheader(" 2.3 Project Sponsor(s) / Stakeholder(s) / Project Team")
 col_team1, col_team2 = st.columns(2)
 with col_team1:
     st.markdown('<div class="stakeholder-header">Partner Executive Sponsor</div>', unsafe_allow_html=True)
@@ -597,6 +600,40 @@ other_assumption_text = st.text_area(
 # Store safely in session_state
 st.session_state.key_assumptions = selected_assumptions
 st.session_state.other_assumptions = other_assumption_text
+
+st.subheader("4.1 Success Dimensions")
+
+success_options = [
+    "Accuracy",
+    "Latency",
+    "Usability",
+    "Explainability",
+    "Coverage",
+    "Cost efficiency",
+    "Integration readiness"
+]
+
+selected_success_dimensions = st.multiselect(
+    "Select success dimensions:",
+    success_options,
+    default=st.session_state.success_dimensions
+)
+
+st.session_state.success_dimensions = selected_success_dimensions
+
+st.subheader("4.2 User Validation Requirement")
+
+st.radio(
+    "Select validation approach:",
+    [
+        "Yes – customer validation required",
+        "No – internal validation sufficient"
+    ],
+    key="user_validation_required"
+)
+
+
+
 
 
 if "Images" in data_types:
@@ -703,6 +740,33 @@ if st.button("✨ Generate SOW Document", type="primary", use_container_width=Tr
             - Do NOT repeat checkbox text verbatim.
             - Align assumptions with engagement type: {st.session_state.engagement_type}
 
+            4.1 Project Success Criteria
+
+            Selected success dimensions:
+            {", ".join(st.session_state.success_dimensions) if st.session_state.success_dimensions else "No explicit success dimensions selected."}
+
+            Instructions:
+            - Generate measurable, quantifiable success criteria for EACH selected dimension.
+            - Tailor criteria to the solution type: {selected_sow_name}.
+            - Use realistic enterprise metrics.
+
+            Examples (if applicable):
+            - Accuracy → "≥85% match with manual reviewer outcomes"
+            - Latency → "Average response time under 2 seconds"
+            - Cost efficiency → "Operate within defined monthly inference budget"
+
+            4.2 User Validation Requirement
+
+            Validation approach selected:
+            {st.session_state.user_validation_required}
+
+            Instructions:
+            - If customer validation is required, clearly state customer responsibilities and sign-off expectations.
+            - If internal validation is sufficient, specify internal review and acceptance criteria.
+            - Align validation approach with engagement type: {st.session_state.engagement_type}.
+
+
+
 
             
 
@@ -766,6 +830,10 @@ if st.session_state.generated_sow:
 
     if "data_characteristics" not in st.session_state:
         st.session_state.data_characteristics = {}
+
+    if "success_dimensions" not in st.session_state:
+        st.session_state.success_dimensions = []
+
 
 
     
