@@ -5,6 +5,8 @@ import re
 import os
 import time 
 import requests
+from PIL import Image
+
 
 # --- FILE PATHING & DIAGRAM MAPPING ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -1140,15 +1142,18 @@ if st.session_state.generated_sow:
 
             diagram_path_out = SOW_DIAGRAM_MAP.get(selected_sow_name)
             if diagram_path_out and os.path.exists(diagram_path_out):
-               st.image(
-                   diagram_path_out,
-                   caption=f"{selected_sow_name} – Architecture Diagram",
-                   use_container_width=True
-               )
-
+                try:
+                    img = Image.open(diagram_path_out)
+                    st.image(
+                        img,
+                        caption=f"{selected_sow_name} – Architecture Diagram",
+                        use_container_width=True
+                    )
+                except Exception as e:
+                    st.warning("⚠️ Architecture diagram exists but is not a valid image file.")
+                    st.caption(f"File path: {diagram_path_out}")
         else:
-            st.markdown(preview_content, unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+            st.info("ℹ️ No architecture diagram mapped for this use case.")
 
     if "customer_dependencies" not in st.session_state:
         st.session_state.customer_dependencies = []
