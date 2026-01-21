@@ -373,15 +373,20 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                     architecture_rendered = True
 
                     diagram_path = SOW_DIAGRAM_MAP.get(sow_type_name)
+
                     if diagram_path and os.path.exists(diagram_path):
-                        doc.add_paragraph("")
-                        doc.add_picture(diagram_path, width=Inches(6.0))
-                        cap = doc.add_paragraph(f"{sow_type_name} – Architecture Diagram")
-                        cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                        try:
+                            doc.add_paragraph("")
+                            doc.add_picture(diagram_path, width=Inches(6.0))
+                            cap = doc.add_paragraph(f"{sow_type_name} – Architecture Diagram")
+                            cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                        except Exception:
+                            doc.add_paragraph("Architecture diagram could not be rendered.")
+                else:
+                    doc.add_paragraph("Architecture diagram not available for this use case.")
 
-                    i += 1
-                    continue
-
+                i += 1
+                continue
 
 
                 if current_header_id == "5" or "COST ESTIMATION" in upper_text:
@@ -430,9 +435,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
         # ---------------- NORMAL TEXT ----------------
         else:
             # Skip architectural descriptions that AI adds which repeat diagram info
-            if "ARCHITECTURE DIAGRAM" in upper_text and rendered_sections["4"] and not rendered_sections["5"]:
-                i += 1
-                continue
+            
             
             p = doc.add_paragraph(clean_text)
             bold_keywords = [
@@ -1180,12 +1183,7 @@ if st.button("✨ Generate SOW Document", type="primary", use_container_width=Tr
 
 
 
-            6 RESOURCES & COST ESTIMATES
-
-            RULES:
-            - Section 4 must include ONLY: "Specifics to be discussed basis POC".
-            - Ensure headings (1-6) appear exactly once.
-            - Start immediately with '1 TABLE OF CONTENTS'. No markdown bolding (**). No introductory fluff.
+            
             """
 
             payload = {
