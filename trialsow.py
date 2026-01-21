@@ -1090,7 +1090,28 @@ if st.button("✨ Generate SOW Document", type="primary", use_container_width=Tr
 
             res, error = call_gemini_with_retry(api_key, payload)
             if res:
-                st.session_state.generated_sow = res.json()['candidates'][0]['content']['parts'][0]['text']
+                response_json = res.json()
+
+                try:
+                    candidates = response_json.get("candidates", [])
+                    if not candidates:
+                        raise ValueError("No candidates returned by Gemini")
+
+                    content = candidates[0].get("content", {})
+                    parts = content.get("parts", [])
+
+                    text_parts = [p.get("text", "") for p in parts if "text" in p]
+                    if not text_parts:
+                        raise ValueError("No text content returned by Gemini")
+
+                    st.session_state.generated_sow = "\n".join(text_parts)
+                    st.balloons()
+
+                except Exception as e:
+                    st.error("❌ Failed to generate SOW content from Gemini.")
+                    st.error(str(e))
+                    st.json(response_json)
+
                 st.balloons()
             else:
                 st.error(error)
