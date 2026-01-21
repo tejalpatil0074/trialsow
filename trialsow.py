@@ -523,6 +523,18 @@ if "deliverables" not in st.session_state:
 if "post_poc_next_steps" not in st.session_state:
     st.session_state.post_poc_next_steps = []
 
+if "poc_duration" not in st.session_state:
+    st.session_state.poc_duration = "4 weeks"
+
+if "phase_breakdown" not in st.session_state:
+    st.session_state.phase_breakdown = {
+        "Infra setup": "",
+        "Core workflows": "",
+        "Testing & validation": "",
+        "Demo & feedback": ""
+    }
+
+
 
 
 
@@ -808,7 +820,26 @@ st.multiselect(
     key="security_compliance"
 )
 
-st.subheader("9.2 Cost Ownership")
+st.subheader("8. Timeline & Phasing")
+
+st.markdown("### 8.1 PoC Duration")
+st.session_state.poc_duration = st.radio(
+    "Select PoC duration:",
+    ["2 weeks", "4 weeks", "6 weeks", "Custom"]
+)
+
+st.markdown("### 8.2 Phase Breakdown")
+
+st.info("You can optionally map weeks to each phase")
+
+for phase in st.session_state.phase_breakdown:
+    st.session_state.phase_breakdown[phase] = st.text_input(
+        f"{phase} (e.g., Week 1–2)",
+        value=st.session_state.phase_breakdown[phase]
+    )
+
+
+st.subheader("9 Cost Ownership")
 
 st.radio(
     "Select cost ownership model:",
@@ -1101,7 +1132,27 @@ if st.button("✨ Generate SOW Document", type="primary", use_container_width=Tr
             - Clearly mention customer and partner responsibilities.
             - If compliance standards are selected, reflect governance alignment.
 
-            9.2 Cost Ownership:
+            8 TIMELINE & PHASING
+
+            8.1 PoC Duration
+            Selected duration:
+            {st.session_state.poc_duration}
+
+            Instruction:
+            - Describe overall engagement duration.
+            - Align depth of activities with selected duration.
+
+            8.2 Phase Breakdown
+            Phase mapping provided by user:
+            {st.session_state.phase_breakdown}
+
+            Instruction:
+            - Expand each phase into a clear timeline narrative.
+            - Ensure logical sequencing.
+            - Keep enterprise consulting tone.
+
+
+            9 Cost Ownership:
             {st.session_state.cost_ownership}
 
             Instructions:
