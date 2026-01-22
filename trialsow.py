@@ -339,7 +339,8 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
         if current_header_id:
             # Prevent double-rendering and handle page breaks
             if not rendered_sections.get(current_header_id, False):
-                if current_header_id == "2": doc.add_page_break() # Overview starts new page
+                if current_header_id == "2": 
+                    doc.add_page_break() # Overview starts new page
                 
                 doc.add_heading(clean_text, level=1)
                 rendered_sections[current_header_id] = True
@@ -370,15 +371,21 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
             continue
 
         # ---------------- TABLE PARSING ----------------
-    if line.startswith('|') and i + 1 < len(lines) and lines[i+1].strip().startswith('|'):
-            # (Rest of your table parsing code remains the same here)
-
-        # ---------------- TABLE PARSING ----------------
-    if line.startswith('|') and i + 1 < len(lines) and lines[i+1].strip().startswith('|'):
+        if line.startswith('|') and i + 1 < len(lines) and lines[i+1].strip().startswith('|'):
             # Filter out redundant tables generated for Section 5
-        if rendered_sections["5"] and not rendered_sections["6"]:
-    i += 1
-    continue
+            if rendered_sections.get("5") and not rendered_sections.get("6"):
+                i += 1
+                continue
+            
+            # (Rest of your table parsing logic should be indented here)
+            # parse_markdown_table_to_docx(doc, lines, i)
+            # i = skip_past_table(lines, i)
+            # continue
+
+        # ---------------- NORMAL TEXT / BULLETS ----------------
+        # (This is where you handle normal paragraph text)
+        doc.add_paragraph(line)
+        i += 1
 
             table_lines = []
             while i < len(lines) and lines[i].strip().startswith('|'):
