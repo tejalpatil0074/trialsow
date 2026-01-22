@@ -11,11 +11,12 @@ from docx.shared import Inches
 def safe_add_picture(doc, image_path, width):
     try:
         if not image_path or not os.path.exists(image_path):
+            print(f"[IMAGE NOT FOUND] {image_path}")
             return False
 
-        # Strict validation
-        with Image.open(image_path) as img:
-            img.verify()
+        # Soft validation (NOT verify)
+        img = Image.open(image_path)
+        img.load()  # ensures readable without rejecting valid PNGs
 
         doc.add_picture(image_path, width=width)
         return True
