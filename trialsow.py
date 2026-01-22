@@ -6,6 +6,23 @@ import os
 import time 
 import requests
 from PIL import Image
+from docx.shared import Inches
+
+def safe_add_picture(doc, image_path, width):
+    try:
+        if not image_path or not os.path.exists(image_path):
+            return False
+
+        # Strict validation
+        with Image.open(image_path) as img:
+            img.verify()
+
+        doc.add_picture(image_path, width=width)
+        return True
+
+    except Exception as e:
+        print(f"[DOCX IMAGE SKIPPED] {image_path} → {e}")
+        return False
 
 
 # --- FILE PATHING & DIAGRAM MAPPING ---
@@ -255,7 +272,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     p_top = doc.add_paragraph()
     p_top.alignment = WD_ALIGN_PARAGRAPH.LEFT
     if os.path.exists(AWS_PN_LOGO):
-        doc.add_picture(AWS_PN_LOGO, width=Inches(1.6))
+        doc.safe_add_picture(doc, AWS_PN_LOGO, Inches(1.6))
 
     doc.add_paragraph("\n" * 3)
 
@@ -286,13 +303,13 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     cell = logo_table.rows[0].cells[1]
     cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
     if os.path.exists(ONETURE_LOGO):
-        cell.paragraphs[0].add_run().add_picture(ONETURE_LOGO, width=Inches(2.2))
+        cell.paragraphs[0].add_run().safe_add_picture(doc, ONETURE_LOGO, Inches(2.2))
 
     # AWS Advanced Tier
     cell = logo_table.rows[0].cells[2]
     cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
     if os.path.exists(AWS_ADV_LOGO):
-        cell.paragraphs[0].add_run().add_picture(AWS_ADV_LOGO, width=Inches(1.8))
+        cell.paragraphs[0].add_run().safe_add_picture(doc, AWS_ADV_LOGO, Inches(1.8))
 
     doc.add_paragraph("\n" * 3)
     date_p = doc.add_paragraph()
@@ -349,9 +366,12 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                     diagram_path = SOW_DIAGRAM_MAP.get(sow_type_name)
                     if diagram_path and os.path.exists(diagram_path):
                         doc.add_paragraph("") 
-                        doc.add_picture(diagram_path, width=Inches(5.8))
+                    if safe_add_picture(doc, diagram_path, Inches(5.8)):
                         cap = doc.add_paragraph(f"{sow_type_name} – Architecture Diagram")
                         cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    else:
+                        doc.add_paragraph("[Architecture diagram unavailable]")
+
                         doc.add_paragraph("")
                     else:
                         doc.add_paragraph("[Architecture Diagram Placeholder]")
