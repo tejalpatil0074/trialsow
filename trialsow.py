@@ -369,32 +369,30 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                 # Immediate content injection
                 # Handle Section Switches (Enforcing Single Rendering)
 
-                if current_header_id == "6" and not architecture_rendered:
-                    architecture_rendered = True
+               # ... (previous logic for header detection) ...
 
+        if current_header_id:
+            if current_header_id in rendered_sections and not rendered_sections[current_header_id]:
+                doc.add_heading(clean_text, level=1)
+                rendered_sections[current_header_id] = True
+
+                # TRIGGER: Solution Architecture (Section 6)
+                if current_header_id == "6":
                     diagram_path = SOW_DIAGRAM_MAP.get(sow_type_name)
-
                     if diagram_path and os.path.exists(diagram_path):
-                        try:
-                            doc.add_paragraph("")
-                            doc.add_picture(diagram_path, width=Inches(6.0))
-                            cap = doc.add_paragraph(f"{sow_type_name} – Architecture Diagram")
-                            cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                        except Exception:
-                            doc.add_paragraph("Architecture diagram could not be rendered.")
-                else:
-                    doc.add_paragraph("Architecture diagram not available for this use case.")
+                        doc.add_paragraph("")
+                        doc.add_picture(diagram_path, width=Inches(6.0))
+                        cap = doc.add_paragraph(f"{sow_type_name} – Architecture Diagram")
+                        cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    else:
+                        doc.add_paragraph("[Architecture Diagram Placeholder]")
 
-                i += 1
-                continue
-
-
-                if current_header_id == "5" or "COST ESTIMATION" in upper_text:
+                # TRIGGER: Cost Table (Section 8)
+                if current_header_id == "8":
                     add_infra_cost_table(doc, sow_type_name, text_content)
 
-            
             i += 1
-            continue
+            continue # Move to next line after processing the header
 
         # ---------------- TABLE PARSING ----------------
         if line.startswith('|') and i + 1 < len(lines) and lines[i+1].strip().startswith('|'):
