@@ -320,79 +320,58 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     while i < len(lines):
         line = lines[i].strip()
         if not line:
-            if i > 0 and lines[i-1].strip() and content_started: doc.add_paragraph("")
             i += 1
             continue
 
+        # Basic Cleaning
         line_clean = re.sub(r'\*+', '', line).strip()
         clean_text = re.sub(r'^#+\s*', '', line_clean).strip()
         upper_text = clean_text.upper()
 
-        # Check if line matches a main section trigger
+        # Identify if this line is one of our 9 main sections
         current_header_id = None
         for h_id, pattern in header_patterns.items():
-            if upper_text.startswith(pattern):
+            if pattern in upper_text: # Using 'in' is safer than 'startswith'
                 current_header_id = h_id
                 break
 
-        # Remove unnecessary commentary, triggers, and redundant AI descriptions
-        irrelevant_keywords = ["PLACEHOLDER FOR COST TABLE", "SPECIFICS TO BE DISCUSSED BASIS POC"]
-        if any(kw in upper_text for kw in irrelevant_keywords):
-            i += 1
-            continue
-
-        # Content started guard: Skip introductory fluff
-        if not content_started:
-            if current_header_id == "1":
-                content_started = True
-            else:
-                i += 1
-                continue
-
-        # Handle Section Switches (Enforcing Single Rendering)
+        # If we found a header...
         if current_header_id:
-            # Enforce Page breaks for TOC (Page 2) and Overview (Page 3)
-            if in_toc_section and current_header_id == "2":
-                in_toc_section = False
-                doc.add_page_break()
-            
-            if current_header_id:
-                if current_header_id not in rendered_sections:
-                    i += 1
-                    continue
-
-                if not rendered_sections[current_header_id]:
-                    doc.add_heading(clean_text, level=1)
-                    rendered_sections[current_header_id] = True
-
-
-                # Immediate content injection
-                # Handle Section Switches (Enforcing Single Rendering)
-
-               # ... (previous logic for header detection) ...
-
-        if current_header_id:
-            if current_header_id in rendered_sections and not rendered_sections[current_header_id]:
+            # Prevent double-rendering and handle page breaks
+            if not rendered_sections.get(current_header_id, False):
+                if current_header_id == "2": doc.add_page_break() # Overview starts new page
+                
                 doc.add_heading(clean_text, level=1)
                 rendered_sections[current_header_id] = True
 
-                # TRIGGER: Solution Architecture (Section 6)
+                # --- TRIGGER: ARCHITECTURE IMAGE (Section 6) ---
                 if current_header_id == "6":
                     diagram_path = SOW_DIAGRAM_MAP.get(sow_type_name)
                     if diagram_path and os.path.exists(diagram_path):
-                        doc.add_paragraph("")
-                        doc.add_picture(diagram_path, width=Inches(6.0))
+                        doc.add_paragraph("") # Space before
+                        doc.add_picture(diagram_path, width=Inches(5.8))
                         cap = doc.add_paragraph(f"{sow_type_name} – Architecture Diagram")
                         cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                        doc.add_paragraph("") # Space after
                     else:
                         doc.add_paragraph("[Architecture Diagram Placeholder]")
 
-                # TRIGGER: Cost Table (Section 8)
+                # --- TRIGGER: INFRA COST TABLE (Section 8) ---
                 if current_header_id == "8":
                     add_infra_cost_table(doc, sow_type_name, text_content)
 
             i += 1
-            continue # Move to next line after processing the header
+            continue # Move to next line (don't process header text as a normal paragraph)
+
+        # Skip unwanted AI commentary lines
+        irrelevant_keywords = ["PLACEHOLDER", "SPECIFICS TO BE DISCUSSED"]
+        if any(kw in upper_text for kw in irrelevant_keywords):
+            i += 1
+            continue
+
+        # ---------------- TABLE PARSING ----------------
+        if line.startswith('|') and i + 1 < len(lines) and lines[i+1].strip().startswith('|'):
+            # (Rest of your table parsing code remains the same here)
 
         # ---------------- TABLE PARSING ----------------
         if line.startswith('|') and i + 1 < len(lines) and lines[i+1].strip().startswith('|'):
