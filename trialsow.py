@@ -376,7 +376,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
         # ---------------- TABLE PARSING ----------------
         if line.startswith('|') and i + 1 < len(lines) and lines[i+1].strip().startswith('|'):
             # Filter out redundant tables generated for Section 5
-            if rendered_sections["5"] and not rendered_sections["6"]:
+        if rendered_sections["5"] and not rendered_sections["6"]:
     i += 1
     continue
 
