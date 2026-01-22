@@ -388,7 +388,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
         i += 1
 
         table_lines = []
-            while i < len(lines) and lines[i].strip().startswith('|'):
+        while i < len(lines) and lines[i].strip().startswith('|'):
                 table_lines.append(lines[i])
                 i += 1
             if len(table_lines) >= 3:
