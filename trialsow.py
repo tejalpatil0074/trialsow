@@ -387,7 +387,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
         doc.add_paragraph(line)
         i += 1
 
-            table_lines = []
+        table_lines = []
             while i < len(lines) and lines[i].strip().startswith('|'):
                 table_lines.append(lines[i])
                 i += 1
