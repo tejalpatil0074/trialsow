@@ -980,7 +980,7 @@ if st.button("✨ Generate SOW Document", type="primary", use_container_width=Tr
             5 SCOPE OF WORK - TECHNICAL PROJECT PLAN
             (Fill detailed technical tasks)
 
-            4 SOLUTION ARCHITECTURE / ARCHITECTURAL DIAGRAM
+            6 SOLUTION ARCHITECTURE / ARCHITECTURAL DIAGRAM
             (Write ONLY 3–5 bullet points. No diagram description.)
 
             7 PERFORMANCE & SECURITY
@@ -988,7 +988,6 @@ if st.button("✨ Generate SOW Document", type="primary", use_container_width=Tr
             7.2 Security & Compliance
 
             8 COST ESTIMATION
-            (Do NOT create tables)
 
             9 RESOURCES & COST ESTIMATES
 
