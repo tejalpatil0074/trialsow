@@ -362,19 +362,20 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                 rendered_sections[current_header_id] = True
 
                 # --- TRIGGER: ARCHITECTURE IMAGE (Section 6) ---
-                if current_header_id == "6":
-                    diagram_path = SOW_DIAGRAM_MAP.get(sow_type_name)
-                    if diagram_path and os.path.exists(diagram_path):
-                        doc.add_paragraph("") 
-                    if safe_add_picture(doc, diagram_path, Inches(5.8)):
-                        cap = doc.add_paragraph(f"{sow_type_name} – Architecture Diagram")
-                        cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                    else:
-                        doc.add_paragraph("[Architecture diagram unavailable]")
+                # --- TRIGGER: ARCHITECTURE IMAGE (Section 6) ---
+        if current_header_id == "6":
+            diagram_path = SOW_DIAGRAM_MAP.get(sow_type_name)
 
-                        doc.add_paragraph("")
-                else:
-                    doc.add_paragraph("[Architecture Diagram Placeholder]")
+            # Force correct placement under heading
+            img_para = doc.add_paragraph()
+            img_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+            if diagram_path and safe_add_picture(doc, diagram_path, Inches(5.8)):
+                cap = doc.add_paragraph(f"{sow_type_name} – Architecture Diagram")
+                cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            else:
+                doc.add_paragraph("[Architecture diagram unavailable]")
+
 
                 # --- TRIGGER: INFRA COST TABLE (Section 8) ---
                 if current_header_id == "8":
