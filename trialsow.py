@@ -331,16 +331,15 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
         # Identify if this line is one of our 9 main sections
         current_header_id = None
         for h_id, pattern in header_patterns.items():
-            if pattern in upper_text: # Using 'in' is safer than 'startswith'
+            if pattern in upper_text: 
                 current_header_id = h_id
                 break
 
-        # If we found a header...
+        # ---------------- MAIN HEADINGS (H1) ----------------
         if current_header_id:
-            # Prevent double-rendering and handle page breaks
             if not rendered_sections.get(current_header_id, False):
                 if current_header_id == "2": 
-                    doc.add_page_break() # Overview starts new page
+                    doc.add_page_break()
                 
                 doc.add_heading(clean_text, level=1)
                 rendered_sections[current_header_id] = True
@@ -349,11 +348,11 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                 if current_header_id == "6":
                     diagram_path = SOW_DIAGRAM_MAP.get(sow_type_name)
                     if diagram_path and os.path.exists(diagram_path):
-                        doc.add_paragraph("") # Space before
+                        doc.add_paragraph("") 
                         doc.add_picture(diagram_path, width=Inches(5.8))
                         cap = doc.add_paragraph(f"{sow_type_name} – Architecture Diagram")
                         cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
-                        doc.add_paragraph("") # Space after
+                        doc.add_paragraph("")
                     else:
                         doc.add_paragraph("[Architecture Diagram Placeholder]")
 
@@ -362,7 +361,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                     add_infra_cost_table(doc, sow_type_name, text_content)
 
             i += 1
-            continue # Move to next line (don't process header text as a normal paragraph)
+            continue
 
         # Skip unwanted AI commentary lines
         irrelevant_keywords = ["PLACEHOLDER", "SPECIFICS TO BE DISCUSSED"]
@@ -377,51 +376,49 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                 i += 1
                 continue
             
-            # (Rest of your table parsing logic should be indented here)
-            # parse_markdown_table_to_docx(doc, lines, i)
-            # i = skip_past_table(lines, i)
-            # continue
-
-        # ---------------- NORMAL TEXT / BULLETS ----------------
-        # (This is where you handle normal paragraph text)
-        doc.add_paragraph(line)
-        i += 1
-
-        table_lines = []
-        while i < len(lines) and lines[i].strip().startswith('|'):
+            table_lines = []
+            while i < len(lines) and lines[i].strip().startswith('|'):
                 table_lines.append(lines[i])
                 i += 1
+            
             if len(table_lines) >= 3:
                 headers = [c.strip() for c in table_lines[0].split('|') if c.strip()]
                 table = doc.add_table(rows=1, cols=len(headers))
                 table.style = "Table Grid"
-                for idx, h in enumerate(headers): table.rows[0].cells[idx].text = h
+                for idx, h in enumerate(headers):
+                    table.rows[0].cells[idx].text = h
+                
                 for row_line in table_lines[2:]:
                     row_cells = table.add_row().cells
                     cells = [c.strip() for c in row_line.split('|') if c.strip()]
                     for idx, c in enumerate(cells):
-                        if idx < len(row_cells): row_cells[idx].text = c
+                        if idx < len(row_cells):
+                            row_cells[idx].text = c
             continue
 
-        # ---------------- HEADINGS (Levels 2 and 3) ----------------
+        # ---------------- SUB-HEADINGS (Levels 2 and 3) ----------------
         if line.startswith('## '):
             h = doc.add_heading(clean_text, level=2)
             if in_toc_section: h.paragraph_format.left_indent = Inches(0.4)
+            i += 1
+            continue
         elif line.startswith('### '):
             h = doc.add_heading(clean_text, level=3)
             if in_toc_section: h.paragraph_format.left_indent = Inches(0.8)
+            i += 1
+            continue
         
         # ---------------- BULLETS ----------------
         elif line.startswith('- ') or line.startswith('* '):
-            p = doc.add_paragraph(clean_text[2:] if (clean_text.startswith('- ') or clean_text.startswith('* ')) else clean_text, style="List Bullet")
+            bullet_text = line[2:].strip()
+            p = doc.add_paragraph(bullet_text, style="List Bullet")
             if in_toc_section: p.paragraph_format.left_indent = Inches(0.4)
+            i += 1
+            continue
         
         # ---------------- NORMAL TEXT ----------------
         else:
-            # Skip architectural descriptions that AI adds which repeat diagram info
-            
-            
-            p = doc.add_paragraph(clean_text)
+            p = doc.add_paragraph(line)
             bold_keywords = [
                 "PARTNER EXECUTIVE SPONSOR", "CUSTOMER EXECUTIVE SPONSOR", 
                 "AWS EXECUTIVE SPONSOR", "PROJECT ESCALATION CONTACTS", 
@@ -429,7 +426,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
             ]
             if any(k in upper_text for k in bold_keywords):
                 if p.runs: p.runs[0].bold = True
-        i += 1
+            i += 1
             
     bio = io.BytesIO()
     doc.save(bio)
