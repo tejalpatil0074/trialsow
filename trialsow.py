@@ -272,7 +272,7 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     p_top = doc.add_paragraph()
     p_top.alignment = WD_ALIGN_PARAGRAPH.LEFT
     if os.path.exists(AWS_PN_LOGO):
-        doc.safe_add_picture(doc, AWS_PN_LOGO, Inches(1.6))
+        safe_add_picture(doc, AWS_PN_LOGO, Inches(1.6))
 
     doc.add_paragraph("\n" * 3)
 
@@ -303,13 +303,13 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
     cell = logo_table.rows[0].cells[1]
     cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
     if os.path.exists(ONETURE_LOGO):
-        cell.paragraphs[0].add_run().safe_add_picture(doc, ONETURE_LOGO, Inches(2.2))
+        safe_add_picture(doc, ONETURE_LOGO, Inches(2.2))
 
     # AWS Advanced Tier
     cell = logo_table.rows[0].cells[2]
     cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
     if os.path.exists(AWS_ADV_LOGO):
-        cell.paragraphs[0].add_run().safe_add_picture(doc, AWS_ADV_LOGO, Inches(1.8))
+        safe_add_picture(doc, AWS_ADV_LOGO, Inches(1.8))
 
     doc.add_paragraph("\n" * 3)
     date_p = doc.add_paragraph()
