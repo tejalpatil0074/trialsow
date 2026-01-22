@@ -373,8 +373,8 @@ def create_docx_logic(text_content, branding_info, sow_type_name):
                         doc.add_paragraph("[Architecture diagram unavailable]")
 
                         doc.add_paragraph("")
-                    else:
-                        doc.add_paragraph("[Architecture Diagram Placeholder]")
+                else:
+                    doc.add_paragraph("[Architecture Diagram Placeholder]")
 
                 # --- TRIGGER: INFRA COST TABLE (Section 8) ---
                 if current_header_id == "8":
